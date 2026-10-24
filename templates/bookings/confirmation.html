@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Booking confirmed — CineBook{% endblock %}
+
+{% block content %}
+    <section class="booking-confirmation" aria-labelledby="confirmation-title">
+        <p class="eyebrow">Your cinema plans are set</p>
+        <h1 id="confirmation-title">Booking confirmed</h1>
+        <p class="confirmation-payment-note">This is a booking confirmation only. No payment was processed.</p>
+
+        <article class="confirmation-card">
+            <div class="confirmation-reference">
+                <span>Booking reference</span>
+                <strong>{{ booking.reference }}</strong>
+            </div>
+            <h2>{{ booking.show.movie.title }}</h2>
+            <p>
+                {{ booking.show.screen.theatre.name }} · {{ booking.show.screen.name }}<br>
+                {{ booking.show.start_time|date:"l, F j, Y" }} at {{ booking.show.start_time|date:"g:i A" }}
+            </p>
+            <div class="confirmation-seats">
+                <h3>Seats</h3>
+                <ul>
+                    {% for booked_seat in booking.booked_seats.all %}
+                        <li>{{ booked_seat.seat.row_identifier }}{{ booked_seat.seat.seat_number }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <p class="confirmation-total">Total <strong>{{ booking.total_amount }}</strong></p>
+        </article>
+
+        <div class="confirmation-actions">
+            <a class="button button-primary" href="{% url 'bookings:my_bookings' %}">View my bookings</a>
+            <a class="button button-secondary" href="{% url 'movies:list' %}">Browse movies</a>
+        </div>
+    </section>
+{% endblock %}

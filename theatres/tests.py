@@ -268,7 +268,7 @@ class SeatSelectionTests(TestCase):
         )
         self.assertContains(response, 'data-unit-price="17.25"', html=False)
 
-    def test_authenticated_continue_revalidates_seats_and_uses_server_price(self):
+    def test_authenticated_continue_creates_booking_using_server_price(self):
         self.client.force_login(self.user)
         selected_ids = [self.seats[0].pk, self.seats[2].pk]
 
@@ -277,12 +277,19 @@ class SeatSelectionTests(TestCase):
             {'seat_ids': selected_ids, 'ticket_price': '0.01'},
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['estimated_total'], Decimal('34.50'))
-        self.assertContains(response, '34.50')
-        self.assertContains(response, 'No seats have been held or booked')
-        self.assertEqual(Booking.objects.count(), 0)
-        self.assertEqual(ActiveSeatClaim.objects.count(), 0)
+        booking = Booking.objects.get()
+        self.assertRedirects(
+            response,
+            reverse('bookings:confirmation', args=[booking.reference]),
+        )
+        self.assertEqual(booking.total_amount, Decimal('34.50'))
+        self.assertEqual(
+            list(booking.booked_seats.values_list('price_paid', flat=True)),
+            [Decimal('17.25'), Decimal('17.25')],
+        )
+        self.assertEqual(ActiveSeatClaim.objects.count(), 2)
+        self.assertEqual(booking.status, Booking.Status.CONFIRMED)
+        self.assertEqual(booking.booked_seats.count(), 2)
 
     def test_post_rejects_seats_from_another_screen(self):
         self.client.force_login(self.user)
@@ -313,8 +320,8 @@ class SeatSelectionTests(TestCase):
 
         response = self.client.post(url, {'seat_ids': [self.seats[0].pk]})
 
-        self.assertEqual(response.status_code, 400)
-        self.assertContains(response, 'no longer available', status_code=400)
+        self.assertEqual(response.status_code, 409)
+        self.assertContains(response, 'no longer available', status_code=409)
 
     def test_anonymous_continue_requires_login(self):
         response = self.client.post(

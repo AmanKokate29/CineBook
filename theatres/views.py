@@ -5,12 +5,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import F
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods
 
 from bookings.models import ActiveSeatClaim, BookedSeat, Booking
+from bookings.services import BookingConflict, BookingRequestError, create_booking
 from movies.models import Movie
 
 from .models import Seat, Show
@@ -109,38 +110,36 @@ def select_seats(request, show_id):
     selected_ids = []
     selected_seats = []
     estimated_total = show.ticket_price * 0
+    response_status = 200
     if request.method == 'POST':
         submitted_ids = request.POST.getlist('seat_ids')
-        if not submitted_ids:
-            errors.append('Select at least one available seat to continue.')
-        elif len(submitted_ids) != len(set(submitted_ids)):
-            errors.append('Duplicate seat selections are not valid. Please select your seats again.')
-        elif any(not re.fullmatch(r'[1-9][0-9]*', seat_id) for seat_id in submitted_ids):
-            errors.append('One or more seat selections are invalid. Please select seats from this screen.')
+        try:
+            booking = create_booking(
+                user=request.user,
+                show_id=show.pk,
+                submitted_seat_ids=submitted_ids,
+            )
+        except BookingConflict as exc:
+            errors.append(str(exc))
+            response_status = 409
+        except BookingRequestError as exc:
+            errors.append(str(exc))
+            response_status = 400
         else:
-            selected_ids = [int(seat_id) for seat_id in submitted_ids]
-            selected_seats = [seat for seat in seats if seat.pk in selected_ids]
-            if len(selected_seats) != len(selected_ids):
-                errors.append(
-                    'One or more selected seats are invalid or do not belong to this show’s screen.'
-                )
-            elif any(seat.pk in unavailable_seat_ids for seat in selected_seats):
-                errors.append('A selected seat is no longer available. Please review the current seat map.')
-                selected_seats = [
-                    seat for seat in selected_seats
-                    if seat.pk not in unavailable_seat_ids
-                ]
-            else:
-                estimated_total = show.ticket_price * len(selected_seats)
-                messages.info(
-                    request,
-                    'The selected seats were available when checked. No seats have been held or booked.',
-                )
+            messages.success(
+                request,
+                f'Booking confirmed. Reference: {booking.reference}. '
+                'No payment was processed.',
+            )
+            return redirect('bookings:confirmation', reference=booking.reference)
 
-        if errors:
-            messages.error(request, ' '.join(errors))
-            selected_ids = [seat.pk for seat in selected_seats]
-            estimated_total = show.ticket_price * len(selected_seats)
+        selected_ids = [
+            int(seat_id)
+            for seat_id in submitted_ids
+            if re.fullmatch(r'[1-9][0-9]*', seat_id)
+        ]
+        selected_seats = [seat for seat in seats if seat.pk in selected_ids]
+        estimated_total = show.ticket_price * len(selected_seats)
 
     return render(
         request,
@@ -154,5 +153,5 @@ def select_seats(request, show_id):
             'estimated_total': estimated_total,
             'errors': errors,
         },
-        status=400 if errors else 200,
+        status=response_status,
     )

@@ -1,9 +1,10 @@
 from django.urls import path
 
-from .views import my_bookings
+from .views import confirmation, my_bookings
 
 app_name = 'bookings'
 
 urlpatterns = [
     path('', my_bookings, name='my_bookings'),
+    path('<uuid:reference>/confirmation/', confirmation, name='confirmation'),
 ]

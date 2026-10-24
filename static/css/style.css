@@ -1541,3 +1541,92 @@ h2 {
         animation-iteration-count: 1 !important;
     }
 }
+
+.booking-confirmation {
+    width: min(100%, 720px);
+    margin: 0 auto;
+}
+
+.confirmation-payment-note {
+    color: var(--color-muted);
+}
+
+.confirmation-card {
+    margin-top: 28px;
+    padding: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    background: var(--color-surface);
+}
+
+.confirmation-reference {
+    display: grid;
+    gap: 5px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.confirmation-reference span {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.confirmation-reference strong {
+    overflow-wrap: anywhere;
+    color: var(--color-accent-bright);
+}
+
+.confirmation-card > h2 {
+    margin: 20px 0 8px;
+}
+
+.confirmation-card > p {
+    color: var(--color-muted);
+    line-height: 1.7;
+}
+
+.confirmation-seats {
+    padding-top: 10px;
+}
+
+.confirmation-seats h3 {
+    font-size: 14px;
+}
+
+.confirmation-seats ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.confirmation-seats li {
+    padding: 5px 9px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+.confirmation-card .confirmation-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 22px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.confirmation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+    .confirmation-card {
+        padding: 22px 18px;
+    }
+}
