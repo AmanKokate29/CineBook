@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts.apps.AccountsConfig',
+    'movies.apps.MoviesConfig',
+    'theatres.apps.TheatresConfig',
+    'bookings.apps.BookingsConfig',
 ]
 
 MIDDLEWARE = [
