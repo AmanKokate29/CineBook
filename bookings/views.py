@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
@@ -7,18 +8,25 @@ from django.views.decorators.http import require_GET, require_POST
 from .models import Booking, BookingCancellationError
 
 
+BOOKINGS_PER_PAGE = 10
+
+
 def _booking_queryset_for(user):
     return (
-        Booking.objects.filter(user=user)
+        Booking.objects.filter(user=user).order_by('-created_at', '-pk')
         .select_related('show__movie', 'show__screen__theatre')
-        .prefetch_related('booked_seats__seat__screen')
+        .prefetch_related('booked_seats__seat')
     )
 
 
 @login_required
 def my_bookings(request):
     now = timezone.now()
-    bookings = list(_booking_queryset_for(request.user))
+    page_obj = Paginator(
+        _booking_queryset_for(request.user),
+        BOOKINGS_PER_PAGE,
+    ).get_page(request.GET.get('page'))
+    bookings = list(page_obj.object_list)
     for booking in bookings:
         booking.can_cancel = (
             booking.status in (Booking.Status.PENDING, Booking.Status.CONFIRMED)
@@ -27,7 +35,7 @@ def my_bookings(request):
     return render(
         request,
         'bookings/my_bookings.html',
-        {'bookings': bookings},
+        {'bookings': bookings, 'page_obj': page_obj},
     )
 
 

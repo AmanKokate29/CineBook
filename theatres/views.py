@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 import re
 
 from django.conf import settings
@@ -30,9 +30,12 @@ def movie_showtimes(request, movie_id):
 
     requested_date = request.GET.get('date', '').strip()
     parsed_date = parse_date(requested_date) if requested_date else None
-    date_error = bool(requested_date and parsed_date is None)
+    date_error = bool(
+        requested_date
+        and (parsed_date is None or parsed_date == date.max)
+    )
 
-    if parsed_date:
+    if parsed_date and not date_error:
         selected_date = parsed_date
     elif available_dates:
         selected_date = available_dates[0]

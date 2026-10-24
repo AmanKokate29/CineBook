@@ -229,6 +229,32 @@ class BookingHistoryAccessTests(TestCase):
         self.assertContains(response, 'No bookings yet')
         self.assertContains(response, reverse('movies:list'))
 
+    def test_booking_history_paginates_per_user(self):
+        for _ in range(10):
+            Booking.objects.create(
+                user=self.owner,
+                show=self.owner_booking.show,
+                total_amount=Decimal('15.00'),
+            )
+        self.client.force_login(self.owner)
+
+        first_page = self.client.get(reverse('bookings:my_bookings'))
+        second_page = self.client.get(
+            reverse('bookings:my_bookings'),
+            {'page': '2'},
+        )
+
+        self.assertEqual(first_page.status_code, 200)
+        self.assertEqual(len(first_page.context['bookings']), 10)
+        self.assertEqual(first_page.context['page_obj'].paginator.num_pages, 2)
+        self.assertContains(first_page, '?page=2')
+        self.assertEqual(second_page.status_code, 200)
+        self.assertEqual(len(second_page.context['bookings']), 1)
+        self.assertEqual(
+            second_page.context['bookings'][0].user_id,
+            self.owner.pk,
+        )
+
     def test_booking_detail_requires_login_and_only_owner_can_view(self):
         url = reverse('bookings:detail', args=[self.owner_booking.reference])
 

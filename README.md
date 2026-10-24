@@ -157,6 +157,14 @@ notepad .env
 
 Set values in `.env` for your local database. For example, set `DB_USER` to
 `cinebook_app` and `DB_PASSWORD` to the password chosen for that MySQL user.
+Keep `DJANGO_DEBUG=True` and `DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost` only for
+local development. Production must set `DJANGO_DEBUG=False` and configure
+`DJANGO_ALLOWED_HOSTS` to the exact hostnames serving the application.
+With debug disabled, HTTPS redirects and secure session/CSRF cookies are
+enabled by default. Reverse-proxy deployments may need to configure the
+appropriate proxy HTTPS header or redirect behavior. Set
+`DJANGO_TRUST_X_FORWARDED_PROTO=True` only when a trusted reverse proxy
+overwrites `X-Forwarded-Proto` and strips untrusted client-supplied values.
 Generate a Django secret key locally:
 
 ```powershell
@@ -172,6 +180,13 @@ required variables are:
 | Variable | Purpose |
 | --- | --- |
 | `DJANGO_SECRET_KEY` | Django signing and session secret |
+| `DJANGO_DEBUG` | Enables Django debug mode (`True` only for local development) |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames accepted by Django |
+| `DJANGO_SECURE_SSL_REDIRECT` | Override HTTPS redirect behavior |
+| `DJANGO_SESSION_COOKIE_SECURE` | Override secure session cookie behavior |
+| `DJANGO_CSRF_COOKIE_SECURE` | Override secure CSRF cookie behavior |
+| `DJANGO_SECURE_HSTS_SECONDS` | Enable HSTS after confirming HTTPS deployment |
+| `DJANGO_TRUST_X_FORWARDED_PROTO` | Trust a reverse proxy's HTTPS protocol header |
 | `DB_NAME` | MySQL database name (`cinebook_db` for the setup above) |
 | `DB_USER` | MySQL application username |
 | `DB_PASSWORD` | MySQL application password |
@@ -309,11 +324,13 @@ CineBook/
 - Booking prices and availability are validated server-side. A database
   uniqueness constraint protects active seat claims under concurrent booking
   requests.
-- The checked-in settings currently set `DEBUG = True` and `ALLOWED_HOSTS = []`
-  for local development. These settings are **not production-ready**. Before
-  deployment, configure production-safe debug/host settings, HTTPS and secure
-  cookies, secret management, database permissions, backups, and media/static
-  serving.
+- **Configuration hardened:** debug now defaults to `False`,
+  hostnames are environment-configured, and DB credentials are required. The
+  example file enables debug only for local use. These settings are still
+  **not a complete production configuration**. Before deployment, configure
+  the production HTTPS/proxy setup, opt into HSTS only after confirming the
+  domain is HTTPS-only, review secret management and database permissions,
+  configure backups, and arrange production media/static serving.
 - Uploaded poster files are stored under the configured local media directory.
   Production media storage and serving need to be configured separately.
 
@@ -325,7 +342,6 @@ CineBook/
   configurable cutoff or refund workflow.
 - Local development settings are not a production deployment configuration.
 - Production media storage/serving and static asset deployment are not included.
-- Booking history currently has no pagination.
 - The application has no automated email notifications or external ticket
   delivery.
 

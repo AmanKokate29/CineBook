@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from bookings.models import BookedSeat
 
@@ -50,9 +51,12 @@ class ScreenAdmin(admin.ModelAdmin):
     list_select_related = ('theatre',)
     list_per_page = 50
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_seat_count=Count('seats'))
+
     @admin.display(description='Seats')
     def seat_count(self, obj):
-        return obj.seats.count()
+        return obj._seat_count
 
 
 @admin.register(Seat)

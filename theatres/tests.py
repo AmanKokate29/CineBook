@@ -134,16 +134,18 @@ class ShowtimeBrowsingTests(TestCase):
     def test_invalid_date_is_handled_without_server_error(self):
         show = self.create_show()
 
-        response = self.client.get(
-            reverse('theatres:movie_showtimes', args=[self.movie.pk]),
-            {'date': 'not-a-date'},
-        )
+        for requested_date in ('not-a-date', '9999-12-31'):
+            with self.subTest(requested_date=requested_date):
+                response = self.client.get(
+                    reverse('theatres:movie_showtimes', args=[self.movie.pk]),
+                    {'date': requested_date},
+                )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['date_error'])
-        self.assertEqual(response.context['selected_date'], show.start_time.date())
-        self.assertContains(response, 'That date was not valid')
-        self.assertContains(response, 'Select seats')
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context['date_error'])
+                self.assertEqual(response.context['selected_date'], show.start_time.date())
+                self.assertContains(response, 'That date was not valid')
+                self.assertContains(response, 'Select seats')
 
     def test_valid_date_without_shows_displays_empty_date_state(self):
         self.create_show()

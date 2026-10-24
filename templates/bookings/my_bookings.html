@@ -60,7 +60,7 @@
                                             <h3>Seats</h3>
                                             <ul>
                                                 {% for booked_seat in seats %}
-                                                    <li>{{ booked_seat.seat }} <span>{{ booked_seat.get_status_display }}</span></li>
+                                                    <li>{{ booked_seat.seat.row_identifier }}{{ booked_seat.seat.seat_number }} <span>{{ booked_seat.get_status_display }}</span></li>
                                                 {% endfor %}
                                             </ul>
                                         </div>
@@ -78,6 +78,21 @@
                     </article>
                 {% endfor %}
             </div>
+            {% if page_obj.has_other_pages %}
+                <nav class="pagination" aria-label="Booking history pages">
+                    {% if page_obj.has_previous %}
+                        <a class="button button-secondary pagination-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% else %}
+                        <span class="button button-secondary pagination-link is-disabled" aria-disabled="true">Previous</span>
+                    {% endif %}
+                    <span class="pagination-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a class="button button-secondary pagination-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    {% else %}
+                        <span class="button button-secondary pagination-link is-disabled" aria-disabled="true">Next</span>
+                    {% endif %}
+                </nav>
+            {% endif %}
         {% else %}
             <div class="empty-state">
                 <h2>No bookings yet</h2>
