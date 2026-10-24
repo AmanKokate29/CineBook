@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Select seats — {{ show.movie.title }} — CineBook{% endblock %}
+
+{% block content %}
+    <section class="seat-selection-page" aria-labelledby="seat-selection-title">
+        <a class="back-link" href="{% url 'theatres:movie_showtimes' show.movie_id %}">&larr; Back to showtimes</a>
+        <div class="page-heading">
+            <p class="eyebrow">{{ show.screen.theatre.name }} · {{ show.screen.theatre.city }}</p>
+            <h1 id="seat-selection-title">Choose your seats</h1>
+            <p class="section-description">
+                {{ show.movie.title }} · {{ show.screen.name }} ·
+                {{ show.start_time|date:"M j, Y, g:i A" }}
+            </p>
+        </div>
+
+        {% if errors %}
+            <div class="seat-form-errors" role="alert" aria-live="assertive">
+                {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        {% if not user.is_authenticated %}
+            <p class="seat-login-note">
+                You can view seat availability, but sign in is required to continue.
+                Your selections are not held.
+                <a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">Sign in</a>
+            </p>
+        {% endif %}
+
+        <div class="seat-legend" aria-label="Seat availability legend">
+            <span><i class="seat-legend-swatch" aria-hidden="true"></i> Available</span>
+            <span><i class="seat-legend-swatch is-selected" aria-hidden="true"></i> Selected</span>
+            <span><i class="seat-legend-swatch is-unavailable" aria-hidden="true"></i> Unavailable</span>
+        </div>
+
+        <div class="screen-indicator" aria-label="Front of screen">SCREEN</div>
+
+        <form class="seat-selection-form" method="post" data-seat-selector data-unit-price="{{ show.ticket_price }}">
+            {% csrf_token %}
+            <fieldset class="seat-map">
+                <legend class="visually-hidden">Select seats for {{ show.movie.title }}</legend>
+                {% regroup seats by row_identifier as seat_rows %}
+                {% for row in seat_rows %}
+                    <div class="seat-row" aria-label="Row {{ row.grouper }}">
+                        <span class="seat-row-label" aria-hidden="true">{{ row.grouper }}</span>
+                        <div class="seat-row-spaces">
+                            {% for seat in row.list %}
+                                <span class="seat-control">
+                                    <input
+                                        class="seat-checkbox"
+                                        type="checkbox"
+                                        id="seat-{{ seat.pk }}"
+                                        name="seat_ids"
+                                        value="{{ seat.pk }}"
+                                        data-seat-label="{{ seat.row_identifier }}{{ seat.seat_number }}"
+                                        {% if seat.is_unavailable %}disabled aria-describedby="seat-unavailable-{{ seat.pk }}"{% endif %}
+                                        {% if seat.pk in selected_seat_ids and not seat.is_unavailable %}checked{% endif %}
+                                    >
+                                    <label class="seat-button{% if seat.is_unavailable %} is-unavailable{% endif %}" for="seat-{{ seat.pk }}">
+                                        <span class="visually-hidden">Seat {{ seat.row_identifier }}{{ seat.seat_number }}{% if seat.is_unavailable %}, unavailable{% else %}, available{% endif %}</span>
+                                        <span aria-hidden="true">{{ seat.seat_number }}</span>
+                                    </label>
+                                    {% if seat.is_unavailable %}
+                                        <span class="visually-hidden" id="seat-unavailable-{{ seat.pk }}">This seat is already reserved.</span>
+                                    {% endif %}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        <span class="seat-row-label" aria-hidden="true">{{ row.grouper }}</span>
+                    </div>
+                {% empty %}
+                    <p class="showtimes-empty">No seats are configured for this screen yet.</p>
+                {% endfor %}
+            </fieldset>
+
+            <div class="seat-summary">
+                <div>
+                    <h2>Selected seats</h2>
+                    <p class="selected-seat-labels" data-selected-seats aria-live="polite">
+                        {% if selected_seats %}
+                            {% for seat in selected_seats %}{{ seat.row_identifier }}{{ seat.seat_number }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% else %}
+                            None selected
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="seat-total">
+                    <span>Estimated total</span>
+                    <strong data-seat-total aria-live="polite">{{ estimated_total|floatformat:2 }}</strong>
+                </div>
+                {% if user.is_authenticated %}
+                    <button class="button button-primary seat-continue" type="submit">Continue</button>
+                {% else %}
+                    <a class="button button-primary seat-continue" href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">Sign in to continue</a>
+                {% endif %}
+            </div>
+            <p class="seat-selection-disclaimer">
+                Prices shown are estimates. Seats are not reserved until a future booking flow confirms your booking.
+            </p>
+        </form>
+    </section>
+{% endblock %}

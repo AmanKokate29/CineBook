@@ -1,12 +1,19 @@
 from datetime import datetime, time, timedelta
+import re
 
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.views import redirect_to_login
+from django.db.models import F
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_http_methods
 
+from bookings.models import ActiveSeatClaim, BookedSeat, Booking
 from movies.models import Movie
 
-from .models import Show
+from .models import Seat, Show
 
 
 def movie_showtimes(request, movie_id):
@@ -58,6 +65,7 @@ def movie_showtimes(request, movie_id):
     )
 
 
+@require_http_methods(['GET', 'POST'])
 def select_seats(request, show_id):
     show = get_object_or_404(
         Show.objects.select_related('movie', 'screen__theatre'),
@@ -66,4 +74,85 @@ def select_seats(request, show_id):
         movie__is_active=True,
         start_time__gte=timezone.now(),
     )
-    return render(request, 'theatres/seat_selection_unavailable.html', {'show': show})
+    if request.method == 'POST' and not request.user.is_authenticated:
+        messages.info(
+            request,
+            'Sign in to continue. Seat selections are not held, so please select them again after signing in.',
+        )
+        return redirect_to_login(request.get_full_path(), settings.LOGIN_URL)
+
+    seats = list(
+        Seat.objects.filter(screen_id=show.screen_id).order_by(
+            'row_identifier',
+            'seat_number',
+        )
+    )
+    unavailable_seat_ids = set(
+        ActiveSeatClaim.objects.filter(
+            show_id=show.pk,
+            seat__screen_id=show.screen_id,
+            booked_seat__show_id=show.pk,
+            booked_seat__seat_id=F('seat_id'),
+            booked_seat__status=BookedSeat.Status.ACTIVE,
+            booked_seat__booking__show_id=show.pk,
+            booked_seat__booking__status__in=(
+                Booking.Status.PENDING,
+                Booking.Status.CONFIRMED,
+            ),
+        ).values_list('seat_id', flat=True)
+    )
+
+    for seat in seats:
+        seat.is_unavailable = seat.pk in unavailable_seat_ids
+
+    errors = []
+    selected_ids = []
+    selected_seats = []
+    estimated_total = show.ticket_price * 0
+    if request.method == 'POST':
+        submitted_ids = request.POST.getlist('seat_ids')
+        if not submitted_ids:
+            errors.append('Select at least one available seat to continue.')
+        elif len(submitted_ids) != len(set(submitted_ids)):
+            errors.append('Duplicate seat selections are not valid. Please select your seats again.')
+        elif any(not re.fullmatch(r'[1-9][0-9]*', seat_id) for seat_id in submitted_ids):
+            errors.append('One or more seat selections are invalid. Please select seats from this screen.')
+        else:
+            selected_ids = [int(seat_id) for seat_id in submitted_ids]
+            selected_seats = [seat for seat in seats if seat.pk in selected_ids]
+            if len(selected_seats) != len(selected_ids):
+                errors.append(
+                    'One or more selected seats are invalid or do not belong to this show’s screen.'
+                )
+            elif any(seat.pk in unavailable_seat_ids for seat in selected_seats):
+                errors.append('A selected seat is no longer available. Please review the current seat map.')
+                selected_seats = [
+                    seat for seat in selected_seats
+                    if seat.pk not in unavailable_seat_ids
+                ]
+            else:
+                estimated_total = show.ticket_price * len(selected_seats)
+                messages.info(
+                    request,
+                    'The selected seats were available when checked. No seats have been held or booked.',
+                )
+
+        if errors:
+            messages.error(request, ' '.join(errors))
+            selected_ids = [seat.pk for seat in selected_seats]
+            estimated_total = show.ticket_price * len(selected_seats)
+
+    return render(
+        request,
+        'theatres/seat_selection.html',
+        {
+            'show': show,
+            'seats': seats,
+            'unavailable_seat_ids': unavailable_seat_ids,
+            'selected_seat_ids': selected_ids,
+            'selected_seats': selected_seats,
+            'estimated_total': estimated_total,
+            'errors': errors,
+        },
+        status=400 if errors else 200,
+    )
