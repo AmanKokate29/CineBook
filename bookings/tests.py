@@ -122,3 +122,61 @@ class ActiveSeatClaimTests(TestCase):
         )
 
         self.assertEqual(claim.show_id, another_show.pk)
+
+
+class BookingHistoryAccessTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.owner = user_model.objects.create_user(
+            username='booking-owner',
+            password='SecureTestPass!825',
+        )
+        self.other_user = user_model.objects.create_user(
+            username='other-customer',
+            password='SecureTestPass!825',
+        )
+        theatre = Theatre.objects.create(
+            name='History Theatre',
+            address='5 Cinema Road',
+            city='Test City',
+        )
+        screen = Screen.objects.create(theatre=theatre, name='Screen A')
+        movie = Movie.objects.create(
+            title='History Test Film',
+            genre='Drama',
+            duration=110,
+            language='English',
+            release_date=timezone.localdate(),
+        )
+        starts = timezone.now() + timedelta(days=1)
+        show = Show.objects.create(
+            movie=movie,
+            screen=screen,
+            start_time=starts,
+            end_time=starts + timedelta(minutes=110),
+            ticket_price=Decimal('15.00'),
+        )
+        self.owner_booking = Booking.objects.create(
+            user=self.owner,
+            show=show,
+            total_amount=Decimal('15.00'),
+        )
+        self.other_booking = Booking.objects.create(
+            user=self.other_user,
+            show=show,
+            total_amount=Decimal('15.00'),
+        )
+
+    def test_booking_history_requires_login(self):
+        response = self.client.get('/bookings/')
+
+        self.assertRedirects(response, '/accounts/login/?next=/bookings/')
+
+    def test_booking_history_only_displays_signed_in_users_bookings(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get('/bookings/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, str(self.owner_booking.reference))
+        self.assertNotContains(response, str(self.other_booking.reference))

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My bookings — CineBook{% endblock %}
+
+{% block content %}
+    <section class="bookings-page" aria-labelledby="bookings-title">
+        <div class="page-heading">
+            <p class="eyebrow">Your CineBook account</p>
+            <h1 id="bookings-title">My bookings</h1>
+            <p class="section-description">Your booking history, all in one place.</p>
+        </div>
+        {% if bookings %}
+            <div class="booking-list">
+                {% for booking in bookings %}
+                    <article class="booking-card">
+                        <div class="booking-heading">
+                            <div>
+                                <p class="booking-label">Booking reference</p>
+                                <h2>{{ booking.reference }}</h2>
+                            </div>
+                            <span class="booking-status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+                        </div>
+                        <dl class="booking-details">
+                            <div>
+                                <dt>Movie</dt>
+                                <dd>{{ booking.show.movie.title }}</dd>
+                            </div>
+                            <div>
+                                <dt>Show time</dt>
+                                <dd>{{ booking.show.start_time|date:"M j, Y, g:i a" }}</dd>
+                            </div>
+                            <div>
+                                <dt>Theatre</dt>
+                                <dd>{{ booking.show.screen.theatre.name }}, {{ booking.show.screen.theatre.city }}</dd>
+                            </div>
+                            <div>
+                                <dt>Total</dt>
+                                <dd>{{ booking.total_amount }}</dd>
+                            </div>
+                            <div>
+                                <dt>Booked</dt>
+                                <dd>{{ booking.created_at|date:"M j, Y, g:i a" }}</dd>
+                            </div>
+                        </dl>
+                        {% with seats=booking.booked_seats.all %}
+                            {% if seats %}
+                                <div class="booking-seats">
+                                    <h3>Seats</h3>
+                                    <ul>
+                                        {% for booked_seat in seats %}
+                                            <li>{{ booked_seat.seat }} <span>{{ booked_seat.get_status_display }}</span></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h2>No bookings yet</h2>
+                <p>Your bookings will appear here when you book a show.</p>
+                <a class="button button-secondary" href="{% url 'movies:list' %}">Explore movies</a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

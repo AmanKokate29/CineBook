@@ -26,14 +26,26 @@
                 <a class="nav-link{% if request.resolver_match.url_name == 'my_bookings' %} is-current{% endif %}" href="{% url 'bookings:my_bookings' %}">My Bookings</a>
                 {% if user.is_authenticated %}
                     <a class="nav-account" href="{% url 'accounts:profile' %}">My Profile</a>
+                    <form class="nav-logout" action="{% url 'accounts:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button class="nav-logout-button" type="submit">Log out</button>
+                    </form>
                 {% else %}
                     <a class="nav-account" href="{% url 'accounts:login' %}">Login</a>
+                    <a class="nav-link nav-register" href="{% url 'accounts:register' %}">Register</a>
                 {% endif %}
             </nav>
         </div>
     </header>
 
     <main id="main-content">
+        {% if messages %}
+            <div class="site-messages" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}
+                    <p class="site-message site-message-{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 
