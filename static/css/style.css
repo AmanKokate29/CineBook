@@ -7,10 +7,14 @@
     --color-muted: #a4a5a8;
     --color-accent: #e4aa67;
     --color-accent-bright: #f0bd7e;
+    --color-danger: #f2a0a0;
     --color-border: rgba(255, 255, 255, 0.1);
+    --color-focus: #ffd39e;
     --font-body: "DM Sans", "Segoe UI", sans-serif;
     --font-heading: "Manrope", "Segoe UI", sans-serif;
     --content-width: 1160px;
+    --radius-card: 10px;
+    --shadow-card: 0 18px 48px rgba(0, 0, 0, 0.18);
 }
 
 * {
@@ -42,11 +46,15 @@ main {
 a {
     color: inherit;
     text-decoration: none;
+    text-underline-offset: 3px;
 }
 
 a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--color-accent-bright);
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--color-focus);
     outline-offset: 4px;
 }
 
@@ -71,7 +79,8 @@ button:focus-visible {
     position: relative;
     z-index: 2;
     border-bottom: 1px solid var(--color-border);
-    background: rgba(16, 17, 19, 0.94);
+    background: rgba(16, 17, 19, 0.96);
+    backdrop-filter: blur(16px);
 }
 
 .header-inner,
@@ -131,6 +140,13 @@ button:focus-visible {
     color: var(--color-text);
 }
 
+.nav-link.is-current {
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
+}
+
 .nav-account {
     padding: 9px 17px;
     border: 1px solid rgba(228, 170, 103, 0.55);
@@ -177,6 +193,13 @@ button:focus-visible {
     color: var(--color-text);
     font: inherit;
     cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.menu-toggle:hover,
+.menu-toggle[aria-expanded="true"] {
+    border-color: rgba(228, 170, 103, 0.6);
+    background: rgba(228, 170, 103, 0.08);
 }
 
 .hero {
@@ -237,6 +260,10 @@ h2 {
     line-height: 1.1;
 }
 
+h1 {
+    text-wrap: balance;
+}
+
 .hero h1 {
     margin-bottom: 24px;
     font-size: clamp(48px, 6.2vw, 76px);
@@ -269,7 +296,7 @@ h2 {
     border-radius: 5px;
     font-size: 14px;
     font-weight: 700;
-    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .button:hover {
@@ -283,6 +310,7 @@ h2 {
 
 .button-primary:hover {
     background: var(--color-accent-bright);
+    box-shadow: 0 7px 24px rgba(228, 170, 103, 0.18);
 }
 
 .button-secondary {
@@ -405,7 +433,7 @@ h2 {
     margin: 32px 0;
     padding: 20px;
     border: 1px solid var(--color-border);
-    border-radius: 7px;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
 }
 
@@ -423,21 +451,30 @@ h2 {
 }
 
 .movie-filters input,
-.movie-filters select {
+.movie-filters select,
+.form-field input,
+.auth-form select,
+.auth-form textarea {
     width: 100%;
     min-height: 46px;
     padding: 9px 12px;
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 5px;
     background: #111214;
     color: var(--color-text);
     font: inherit;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .movie-filters input:focus,
-.movie-filters select:focus {
+.movie-filters select:focus,
+.form-field input:focus,
+.auth-form select:focus,
+.auth-form textarea:focus {
     border-color: var(--color-accent);
-    outline: 2px solid rgba(228, 170, 103, 0.2);
+    background: #151618;
+    box-shadow: 0 0 0 3px rgba(228, 170, 103, 0.16);
+    outline: none;
 }
 
 .movie-filters input::placeholder {
@@ -472,14 +509,21 @@ h2 {
 .movie-card {
     overflow: hidden;
     border: 1px solid var(--color-border);
-    border-radius: 7px;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
-    transition: border-color 160ms ease, transform 160ms ease;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .movie-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
     border-color: rgba(228, 170, 103, 0.5);
+    box-shadow: var(--shadow-card);
+}
+
+.movie-card:focus-within {
+    border-color: rgba(228, 170, 103, 0.7);
+    box-shadow: 0 0 0 2px rgba(228, 170, 103, 0.18);
 }
 
 .movie-card-link {
@@ -536,7 +580,7 @@ h2 {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 18px;
+    padding: 20px;
 }
 
 .movie-card-content h2 {
@@ -835,7 +879,8 @@ h2 {
 .seat-selection-form {
     padding: 28px;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
     background: var(--color-surface);
 }
 
@@ -921,6 +966,10 @@ h2 {
     cursor: not-allowed;
 }
 
+.seat-checkbox:disabled + .seat-button {
+    opacity: 0.65;
+}
+
 .seat-checkbox:disabled + .seat-button:hover {
     transform: none;
 }
@@ -1003,6 +1052,7 @@ h2 {
     border-radius: 5px;
     background: rgba(239, 114, 114, 0.08);
     color: #f2a0a0;
+    box-shadow: inset 3px 0 0 rgba(239, 114, 114, 0.7);
 }
 
 .seat-form-errors p {
@@ -1105,6 +1155,15 @@ h2 {
     background: rgba(239, 114, 114, 0.08);
 }
 
+.site-message-success {
+    border-color: rgba(120, 190, 145, 0.45);
+    background: rgba(120, 190, 145, 0.09);
+}
+
+.site-message-warning {
+    border-color: rgba(240, 189, 126, 0.5);
+}
+
 .auth-page,
 .bookings-page {
     width: min(100% - 40px, 850px);
@@ -1150,19 +1209,7 @@ h2 {
 }
 
 .form-field input {
-    width: 100%;
-    min-height: 46px;
     padding: 10px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 5px;
-    background: #111214;
-    color: var(--color-text);
-    font: inherit;
-}
-
-.form-field input:focus {
-    border-color: var(--color-accent);
-    outline: 2px solid rgba(228, 170, 103, 0.2);
 }
 
 .field-help,
@@ -1218,8 +1265,14 @@ h2 {
 .booking-card {
     padding: 24px;
     border: 1px solid var(--color-border);
-    border-radius: 7px;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.booking-card:hover {
+    border-color: rgba(228, 170, 103, 0.3);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.16);
 }
 
 .booking-card-main {
@@ -1288,10 +1341,23 @@ h2 {
     border-radius: 100px;
     color: var(--color-accent-bright);
     font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-confirmed {
+    border-color: rgba(120, 190, 145, 0.38);
+    color: #a8d7b6;
+}
+
+.status-pending {
+    border-color: rgba(240, 189, 126, 0.42);
+    color: var(--color-accent-bright);
 }
 
 .status-cancelled {
-    color: #f2a0a0;
+    border-color: rgba(239, 114, 114, 0.4);
+    color: var(--color-danger);
 }
 
 .booking-details {
@@ -1442,9 +1508,10 @@ h2 {
 .empty-state {
     padding: 36px;
     border: 1px solid var(--color-border);
-    border-radius: 7px;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
     text-align: center;
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.14);
 }
 
 .empty-state h2 {
@@ -1460,6 +1527,10 @@ h2 {
 .site-footer {
     border-top: 1px solid var(--color-border);
     background: #0c0d0f;
+}
+
+.site-footer a:focus-visible {
+    border-radius: 3px;
 }
 
 .footer-inner {
@@ -1506,7 +1577,8 @@ h2 {
         gap: 0;
         padding: 8px 20px 18px;
         border-bottom: 1px solid var(--color-border);
-        background: var(--color-background);
+        background: rgba(16, 17, 19, 0.99);
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.28);
     }
 
     .primary-navigation.is-open {
@@ -1517,6 +1589,10 @@ h2 {
     .nav-link,
     .nav-account {
         padding: 12px 4px;
+    }
+
+    .nav-link.is-current {
+        text-underline-offset: 5px;
     }
 
     .nav-account {
@@ -1573,6 +1649,14 @@ h2 {
 
     .seat-selection-form {
         padding: 18px 12px;
+    }
+
+    .seat-selection-page,
+    .showtimes-page,
+    .movie-detail,
+    .movies-page {
+        padding-top: 36px;
+        padding-bottom: 72px;
     }
 
     .seat-row {
@@ -1639,6 +1723,61 @@ h2 {
 
     .hero-description {
         font-size: 15px;
+    }
+
+    .movies-page,
+    .auth-page,
+    .bookings-page,
+    .seat-selection-page,
+    .showtimes-page,
+    .movie-detail {
+        width: min(100% - 32px, var(--content-width));
+    }
+
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr));
+        gap: 14px;
+    }
+
+    .movie-card-content {
+        padding: 14px;
+    }
+
+    .movie-card-content h2 {
+        font-size: 16px;
+    }
+
+    .movie-meta {
+        gap: 5px;
+    }
+
+    .movie-meta li + li::before {
+        margin-right: 5px;
+    }
+
+    .movie-filters {
+        padding: 16px;
+    }
+
+    .theatre-show-card {
+        padding: 18px;
+    }
+
+    .showtime-option {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .showtime-button {
+        width: 100%;
+    }
+
+    .seat-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .seat-total {
+        text-align: left;
     }
 
     .footer-inner {
@@ -1716,20 +1855,32 @@ h2 {
 }
 
 .booking-confirmation {
-    width: min(100%, 720px);
+    width: min(100% - 40px, 780px);
     margin: 0 auto;
+    padding: 64px 0 96px;
+}
+
+.booking-confirmation > .eyebrow {
+    margin-bottom: 12px;
+}
+
+.booking-confirmation > h1 {
+    margin-bottom: 12px;
+    font-size: clamp(36px, 5vw, 54px);
 }
 
 .confirmation-payment-note {
     color: var(--color-muted);
+    font-size: 14px;
 }
 
 .confirmation-card {
     margin-top: 28px;
     padding: 28px;
     border: 1px solid var(--color-border);
-    border-radius: 7px;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
+    box-shadow: var(--shadow-card);
 }
 
 .confirmation-reference {
@@ -1749,11 +1900,29 @@ h2 {
     color: var(--color-accent-bright);
 }
 
-.confirmation-card > h2 {
-    margin: 20px 0 8px;
+.confirmation-movie {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 24px;
+    padding: 22px 0;
 }
 
-.confirmation-card > p {
+.confirmation-poster {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    display: block;
+    object-fit: cover;
+    border-radius: 5px;
+    background: var(--color-surface-raised);
+}
+
+.confirmation-movie-details h2 {
+    margin: 12px 0 8px;
+    font-size: clamp(20px, 3vw, 28px);
+}
+
+.confirmation-movie-details p {
+    margin-bottom: 10px;
     color: var(--color-muted);
     line-height: 1.7;
 }
@@ -1781,6 +1950,10 @@ h2 {
     border-radius: 4px;
 }
 
+.confirmation-seats li span {
+    color: var(--color-muted);
+}
+
 .confirmation-card .confirmation-total {
     display: flex;
     justify-content: space-between;
@@ -1799,7 +1972,17 @@ h2 {
 }
 
 @media (max-width: 480px) {
+    .booking-confirmation {
+        width: min(100% - 32px, 780px);
+        padding: 42px 0 64px;
+    }
+
     .confirmation-card {
         padding: 22px 18px;
+    }
+
+    .confirmation-movie {
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 14px;
     }
 }

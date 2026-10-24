@@ -18,14 +18,15 @@
                 <span class="wordmark-icon" aria-hidden="true">C</span>
                 <span>Cine<span class="wordmark-accent">Book</span></span>
             </a>
-            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation menu">
                 <span class="menu-toggle-label">Menu</span>
             </button>
             <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation">
-                <a class="nav-link{% if request.resolver_match.url_name == 'home' %} is-current{% endif %}" href="{% url 'home' %}">Home</a>
-                <a class="nav-link{% if request.resolver_match.url_name == 'my_bookings' %} is-current{% endif %}" href="{% url 'bookings:my_bookings' %}">My Bookings</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'home' %} is-current{% endif %}" href="{% url 'home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}>Home</a>
+                <a class="nav-link{% if request.resolver_match.app_name == 'movies' %} is-current{% endif %}" href="{% url 'movies:list' %}"{% if request.resolver_match.app_name == 'movies' %} aria-current="page"{% endif %}>Movies</a>
+                <a class="nav-link{% if request.resolver_match.app_name == 'bookings' %} is-current{% endif %}" href="{% url 'bookings:my_bookings' %}"{% if request.resolver_match.app_name == 'bookings' %} aria-current="page"{% endif %}>My Bookings</a>
                 {% if user.is_authenticated %}
-                    <a class="nav-account" href="{% url 'accounts:profile' %}">My Profile</a>
+                    <a class="nav-account{% if request.resolver_match.url_name == 'profile' %} is-current{% endif %}" href="{% url 'accounts:profile' %}"{% if request.resolver_match.url_name == 'profile' %} aria-current="page"{% endif %}>My Profile</a>
                     <form class="nav-logout" action="{% url 'accounts:logout' %}" method="post">
                         {% csrf_token %}
                         <button class="nav-logout-button" type="submit">Log out</button>
@@ -40,9 +41,9 @@
 
     <main id="main-content">
         {% if messages %}
-            <div class="site-messages" aria-live="polite" aria-atomic="true">
+            <div class="site-messages" aria-atomic="true">
                 {% for message in messages %}
-                    <p class="site-message site-message-{{ message.tags }}">{{ message }}</p>
+                    <p class="site-message site-message-{{ message.tags }}" role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}" aria-live="{% if 'error' in message.tags %}assertive{% else %}polite{% endif %}">{{ message }}</p>
                 {% endfor %}
             </div>
         {% endif %}

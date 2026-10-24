@@ -13,16 +13,27 @@
                 <span>Booking reference</span>
                 <strong>{{ booking.reference }}</strong>
             </div>
-            <h2>{{ booking.show.movie.title }}</h2>
-            <p>
-                {{ booking.show.screen.theatre.name }} · {{ booking.show.screen.name }}<br>
-                {{ booking.show.start_time|date:"l, F j, Y" }} at {{ booking.show.start_time|date:"g:i A" }}
-            </p>
+            <div class="confirmation-movie">
+                {% if booking.show.movie.poster %}
+                    <img class="confirmation-poster" src="{{ booking.show.movie.poster.url }}" alt="Poster for {{ booking.show.movie.title }}">
+                {% else %}
+                    <div class="confirmation-poster movie-poster-placeholder" role="img" aria-label="No poster available for {{ booking.show.movie.title }}">
+                        <span class="poster-mark" aria-hidden="true">C</span>
+                        <span class="poster-title">{{ booking.show.movie.title }}</span>
+                    </div>
+                {% endif %}
+                <div class="confirmation-movie-details">
+                    <span class="booking-status status-confirmed">Confirmed</span>
+                    <h2>{{ booking.show.movie.title }}</h2>
+                    <p>{{ booking.show.screen.theatre.name }} · {{ booking.show.screen.theatre.city }}<br>{{ booking.show.screen.name }}</p>
+                    <p><time datetime="{{ booking.show.start_time|date:'c' }}">{{ booking.show.start_time|date:"l, F j, Y" }} at {{ booking.show.start_time|date:"g:i A" }}</time></p>
+                </div>
+            </div>
             <div class="confirmation-seats">
                 <h3>Seats</h3>
                 <ul>
                     {% for booked_seat in booking.booked_seats.all %}
-                        <li>{{ booked_seat.seat.row_identifier }}{{ booked_seat.seat.seat_number }}</li>
+                        <li>{{ booked_seat.seat.row_identifier }}{{ booked_seat.seat.seat_number }} <span>{{ booked_seat.price_paid }}</span></li>
                     {% endfor %}
                 </ul>
             </div>
