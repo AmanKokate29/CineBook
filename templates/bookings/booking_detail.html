@@ -69,6 +69,18 @@
                     {% endif %}
                 {% endwith %}
             </div>
+
+            {% if booking.can_cancel %}
+                <form class="booking-cancel-form" method="post" action="{% url 'bookings:cancel' booking.reference %}">
+                    {% csrf_token %}
+                    <p>Cancellation is available until the show starts.</p>
+                    <button class="button button-danger" type="submit">Cancel booking</button>
+                </form>
+            {% elif booking.status == "cancelled" %}
+                <p class="booking-cancelled-note">This booking has been cancelled. Its booking and seat price history are retained.</p>
+            {% else %}
+                <p class="booking-cancelled-note">This booking can no longer be cancelled because the show has started.</p>
+            {% endif %}
         </article>
     </section>
 {% endblock %}

@@ -3,8 +3,13 @@ import uuid
 from django.conf import settings
 from django.db import models, transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from theatres.models import Seat, Show
+
+
+class BookingCancellationError(Exception):
+    pass
 
 
 class Booking(models.Model):
@@ -53,15 +58,24 @@ class Booking(models.Model):
             raise ValueError('A booking must be saved before it can be cancelled.')
 
         with transaction.atomic():
+            show = Show.objects.select_for_update().get(pk=self.show_id)
             booking = Booking.objects.select_for_update().get(pk=self.pk)
-            if booking.status != self.Status.CANCELLED:
-                BookedSeat.objects.filter(
-                    booking=booking,
-                    status=BookedSeat.Status.ACTIVE,
-                ).update(status=BookedSeat.Status.RELEASED)
-                ActiveSeatClaim.objects.filter(booked_seat__booking=booking).delete()
-                booking.status = self.Status.CANCELLED
-                booking.save(update_fields=['status'])
+            if booking.status not in (self.Status.PENDING, self.Status.CONFIRMED):
+                raise BookingCancellationError(
+                    'This booking has already been cancelled or is not eligible for cancellation.'
+                )
+            if show.start_time <= timezone.now():
+                raise BookingCancellationError(
+                    'Bookings can only be cancelled before the show starts.'
+                )
+
+            BookedSeat.objects.filter(
+                booking=booking,
+                status=BookedSeat.Status.ACTIVE,
+            ).update(status=BookedSeat.Status.RELEASED)
+            ActiveSeatClaim.objects.filter(booked_seat__booking=booking).delete()
+            booking.status = self.Status.CANCELLED
+            booking.save(update_fields=['status'])
 
         self.status = self.Status.CANCELLED
 

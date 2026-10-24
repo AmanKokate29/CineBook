@@ -67,7 +67,14 @@
                                     {% endif %}
                                 {% endwith %}
                                 <a class="booking-detail-link" href="{% url 'bookings:detail' booking.reference %}">View booking details</a>
+                                {% if booking.can_cancel %}
+                                    <form class="booking-cancel-form booking-cancel-form-compact" method="post" action="{% url 'bookings:cancel' booking.reference %}">
+                                        {% csrf_token %}
+                                        <button class="button button-danger" type="submit">Cancel booking</button>
+                                    </form>
+                                {% endif %}
                             </div>
+                        </div>
                     </article>
                 {% endfor %}
             </div>

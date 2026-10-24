@@ -11,7 +11,7 @@ from django.db import (
     connections,
     transaction,
 )
-from django.test import TestCase, TransactionTestCase, skipUnlessDBFeature
+from django.test import Client, TestCase, TransactionTestCase, skipUnlessDBFeature
 from django.urls import reverse
 from django.utils import timezone
 
@@ -182,11 +182,16 @@ class BookingHistoryAccessTests(TestCase):
             row_identifier='B',
             seat_number=4,
         )
-        BookedSeat.objects.create(
+        self.owner_booked_seat = BookedSeat.objects.create(
             booking=self.owner_booking,
             show=show,
             seat=seat,
             price_paid=Decimal('15.00'),
+        )
+        self.owner_claim = ActiveSeatClaim.objects.create(
+            booked_seat=self.owner_booked_seat,
+            show=show,
+            seat=seat,
         )
 
     def test_booking_history_requires_login(self):
@@ -256,6 +261,91 @@ class BookingHistoryAccessTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'No payment was processed')
+
+    def test_owner_can_cancel_with_post_and_seats_are_released(self):
+        self.client.force_login(self.owner)
+        url = reverse('bookings:cancel', args=[self.owner_booking.reference])
+
+        response = self.client.post(url, follow=True)
+
+        self.assertRedirects(
+            response,
+            reverse('bookings:detail', args=[self.owner_booking.reference]),
+        )
+        self.assertEqual(
+            Booking.objects.get(pk=self.owner_booking.pk).status,
+            Booking.Status.CANCELLED,
+        )
+        self.assertEqual(
+            BookedSeat.objects.get(pk=self.owner_booked_seat.pk).status,
+            BookedSeat.Status.RELEASED,
+        )
+        self.assertFalse(
+            ActiveSeatClaim.objects.filter(pk=self.owner_claim.pk).exists()
+        )
+        self.assertContains(response, 'has been cancelled', status_code=200)
+        self.assertContains(response, 'retained')
+
+    def test_cancellation_rejects_get_repeats_and_other_users(self):
+        url = reverse('bookings:cancel', args=[self.owner_booking.reference])
+        self.client.force_login(self.owner)
+
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.post(url).status_code, 404)
+        self.assertEqual(
+            Booking.objects.get(pk=self.owner_booking.pk).status,
+            Booking.Status.CONFIRMED,
+        )
+
+        self.client.force_login(self.owner)
+        self.client.post(url)
+        response = self.client.post(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'already been cancelled')
+        self.assertEqual(
+            BookedSeat.objects.get(pk=self.owner_booked_seat.pk).status,
+            BookedSeat.Status.RELEASED,
+        )
+
+    def test_started_show_cannot_be_cancelled(self):
+        self.owner_booking.show.start_time = timezone.now() - timedelta(minutes=1)
+        self.owner_booking.show.save(update_fields=['start_time'])
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('bookings:cancel', args=[self.owner_booking.reference]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'only be cancelled before the show starts')
+        self.assertEqual(
+            Booking.objects.get(pk=self.owner_booking.pk).status,
+            Booking.Status.CONFIRMED,
+        )
+        self.assertEqual(
+            BookedSeat.objects.get(pk=self.owner_booked_seat.pk).status,
+            BookedSeat.Status.ACTIVE,
+        )
+        self.assertTrue(
+            ActiveSeatClaim.objects.filter(pk=self.owner_claim.pk).exists()
+        )
+
+    def test_cancellation_post_requires_csrf(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.owner)
+        url = reverse('bookings:cancel', args=[self.owner_booking.reference])
+        csrf_client.get(reverse('bookings:detail', args=[self.owner_booking.reference]))
+
+        response = csrf_client.post(url)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            Booking.objects.get(pk=self.owner_booking.pk).status,
+            Booking.Status.CONFIRMED,
+        )
 
 
 class BookingServiceTests(TestCase):

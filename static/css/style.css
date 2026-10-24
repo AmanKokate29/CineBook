@@ -1398,6 +1398,47 @@ h2 {
     margin-top: 0;
 }
 
+.booking-cancel-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.booking-cancel-form p,
+.booking-cancelled-note {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.booking-cancel-form-compact {
+    justify-content: flex-start;
+    margin-top: 12px;
+    padding-top: 0;
+    border: 0;
+}
+
+.button-danger {
+    border: 1px solid rgba(239, 114, 114, 0.5);
+    background: rgba(239, 114, 114, 0.1);
+    color: #f2a0a0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.button-danger:hover {
+    border-color: #ef7272;
+    background: rgba(239, 114, 114, 0.18);
+}
+
+.booking-cancelled-note {
+    margin-top: 22px;
+}
+
 .empty-state {
     padding: 36px;
     border: 1px solid var(--color-border);
@@ -1650,6 +1691,11 @@ h2 {
     .booking-detail-facts {
         grid-template-columns: 1fr;
         gap: 14px;
+    }
+
+    .booking-cancel-form:not(.booking-cancel-form-compact) {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .footer-inner p {
