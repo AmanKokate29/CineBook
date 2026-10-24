@@ -388,6 +388,30 @@ class BookingServiceTests(TestCase):
                     )
         self.assertFalse(Booking.objects.exists())
 
+    def test_booking_references_are_unique_in_the_database(self):
+        first = create_booking(
+            user=self.user,
+            show_id=self.show.pk,
+            submitted_seat_ids=[str(self.seats[0].pk)],
+        )
+        second = create_booking(
+            user=self.user,
+            show_id=self.show.pk,
+            submitted_seat_ids=[str(self.seats[1].pk)],
+        )
+
+        self.assertNotEqual(first.reference, second.reference)
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Booking.objects.create(
+                    user=self.user,
+                    show=self.show,
+                    reference=first.reference,
+                    total_amount=Decimal('13.75'),
+                )
+
+        self.assertEqual(Booking.objects.filter(show=self.show).count(), 2)
+
     def test_service_rejects_inactive_and_started_shows(self):
         self.show.is_active = False
         self.show.save(update_fields=['is_active'])

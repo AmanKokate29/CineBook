@@ -57,6 +57,25 @@ class ShowtimeBrowsingTests(TestCase):
             start_time=timezone.now() - timedelta(days=1),
             end_time=timezone.now() - timedelta(days=1) + timedelta(minutes=110),
         )
+        other_screen = Screen.objects.create(
+            theatre=self.theatre,
+            name='Screen Two',
+        )
+        unrelated_screen_show = self.create_show(
+            screen=other_screen,
+            start_time=self.make_start(),
+        )
+        unrelated_movie = Movie.objects.create(
+            title='Another Film',
+            genre='Comedy',
+            duration=95,
+            language='English',
+            release_date=timezone.localdate(),
+        )
+        unrelated_movie_show = self.create_show(
+            movie=unrelated_movie,
+            start_time=self.make_start(),
+        )
         inactive_movie = Movie.objects.create(
             title='Inactive Feature',
             genre='Drama',
@@ -81,7 +100,19 @@ class ShowtimeBrowsingTests(TestCase):
         self.assertContains(response, reverse('theatres:select_seats', args=[show.pk]))
         self.assertContains(response, 'Select seats')
         self.assertNotContains(response, 'Inactive Feature')
-        self.assertEqual(list(response.context['shows']), [show])
+        self.assertContains(
+            response,
+            reverse('theatres:select_seats', args=[unrelated_screen_show.pk]),
+        )
+        self.assertNotContains(response, unrelated_movie.title)
+        self.assertNotContains(
+            response,
+            reverse('theatres:select_seats', args=[unrelated_movie_show.pk]),
+        )
+        self.assertEqual(
+            list(response.context['shows']),
+            [show, unrelated_screen_show],
+        )
 
     def test_selected_date_filters_showtimes(self):
         selected_show = self.create_show(start_time=self.make_start(days=2))
@@ -311,6 +342,21 @@ class SeatSelectionTests(TestCase):
                 response = self.client.post(url, {'seat_ids': [seat_id]})
                 self.assertEqual(response.status_code, 400)
                 self.assertContains(response, 'invalid', status_code=400)
+
+    def test_post_rejects_duplicate_seat_ids_without_creating_booking(self):
+        self.client.force_login(self.user)
+        seat_id = str(self.seats[0].pk)
+
+        response = self.client.post(
+            reverse('theatres:select_seats', args=[self.show.pk]),
+            {'seat_ids': [seat_id, seat_id]},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'Duplicate seat selections', status_code=400)
+        self.assertFalse(Booking.objects.exists())
+        self.assertFalse(BookedSeat.objects.exists())
+        self.assertFalse(ActiveSeatClaim.objects.exists())
 
     def test_post_rechecks_reservation_added_after_initial_page_load(self):
         self.client.force_login(self.user)
