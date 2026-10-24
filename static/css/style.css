@@ -397,6 +397,72 @@ h2 {
     padding: 72px 0 100px;
 }
 
+.movie-filters {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 32px 0;
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    background: var(--color-surface);
+}
+
+.movie-search-field,
+.movie-genre-field {
+    display: grid;
+    flex: 1 1 220px;
+    gap: 7px;
+}
+
+.movie-filters label {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.movie-filters input,
+.movie-filters select {
+    width: 100%;
+    min-height: 46px;
+    padding: 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: #111214;
+    color: var(--color-text);
+    font: inherit;
+}
+
+.movie-filters input:focus,
+.movie-filters select:focus {
+    border-color: var(--color-accent);
+    outline: 2px solid rgba(228, 170, 103, 0.2);
+}
+
+.movie-filters input::placeholder {
+    color: #77797d;
+}
+
+.movie-filter-submit {
+    min-height: 46px;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.clear-filters {
+    padding: 10px 4px;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.clear-filters:hover {
+    color: var(--color-accent-bright);
+}
+
 .movie-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -510,6 +576,29 @@ h2 {
     color: var(--color-accent-bright);
     font-size: 13px;
     font-weight: 600;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 36px;
+}
+
+.pagination-link {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
+.pagination-status {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.pagination .is-disabled {
+    opacity: 0.45;
 }
 
 .movie-detail {
@@ -908,6 +997,18 @@ h2 {
 
     .hero-art {
         min-height: 350px;
+    }
+
+    .movie-filters {
+        align-items: stretch;
+    }
+
+    .movie-filter-submit {
+        width: 100%;
+    }
+
+    .clear-filters {
+        text-align: center;
     }
 
     .movie-detail-layout {

@@ -105,10 +105,100 @@ class MovieBrowsingTests(TestCase):
                 response = self.client.get(reverse('movies:detail', args=[movie_id]))
                 self.assertEqual(response.status_code, 404)
 
-    def test_list_page_uses_one_movie_query(self):
+    def test_list_page_uses_bounded_database_queries(self):
         self.create_movie()
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             response = self.client.get(reverse('movies:list'))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_search_filters_by_title_case_insensitively(self):
+        match = self.create_movie(title='Silver Comet')
+        self.create_movie(title='Quiet Harbor')
+
+        response = self.client.get(reverse('movies:list'), {'q': '  sIlVeR  '})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, match.title)
+        self.assertNotContains(response, 'Quiet Harbor')
+        self.assertEqual(response.context['search_query'], 'sIlVeR')
+        self.assertContains(response, 'value="sIlVeR"', html=False)
+
+    def test_genre_filter_preserves_selection_and_ignores_inactive_genres(self):
+        action_movie = self.create_movie(title='Action Film', genre='Action')
+        self.create_movie(title='Comedy Film', genre='Comedy')
+        self.create_movie(title='Inactive Horror', genre='Horror', is_active=False)
+
+        response = self.client.get(reverse('movies:list'), {'genre': 'action'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, action_movie.title)
+        self.assertNotContains(response, 'Comedy Film')
+        self.assertNotContains(response, 'Inactive Horror')
+        self.assertEqual(response.context['selected_genre'], 'Action')
+        self.assertContains(response, '<option value="Action" selected>', html=False)
+        self.assertNotContains(response, '<option value="Horror">', html=False)
+
+    def test_search_and_genre_filters_combine(self):
+        match = self.create_movie(title='Moonlit Mystery', genre='Mystery')
+        self.create_movie(title='Moonlit Journey', genre='Adventure')
+        self.create_movie(title='Daylight Mystery', genre='Mystery')
+
+        response = self.client.get(
+            reverse('movies:list'),
+            {'q': 'Moonlit', 'genre': 'Mystery'},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, match.title)
+        self.assertNotContains(response, 'Moonlit Journey')
+        self.assertNotContains(response, 'Daylight Mystery')
+
+    def test_no_matches_shows_filter_empty_state(self):
+        self.create_movie()
+
+        response = self.client.get(
+            reverse('movies:list'),
+            {'q': 'No such title', 'genre': 'Science Fiction'},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No movies match your filters')
+        self.assertContains(response, 'Clear filters')
+
+    def test_invalid_query_values_do_not_break_listing(self):
+        long_search = 'x' * 500
+
+        response = self.client.get(
+            reverse('movies:list'),
+            {'q': long_search, 'genre': 'Not a real genre', 'page': 'not-a-number'},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['search_query']), 100)
+        self.assertEqual(response.context['selected_genre'], '')
+        self.assertContains(response, 'No movies match your filters')
+
+    def test_pagination_preserves_search_and_genre_filters(self):
+        for number in range(13):
+            self.create_movie(title=f'Mystery Feature {number:02d}', genre='Mystery')
+
+        response = self.client.get(
+            reverse('movies:list'),
+            {'q': 'Mystery', 'genre': 'Mystery', 'page': '1'},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['movies']), 12)
+        self.assertContains(response, '?q=Mystery&amp;genre=Mystery&amp;page=2')
+
+    def test_invalid_page_number_falls_back_to_first_page(self):
+        for number in range(13):
+            self.create_movie(title=f'Feature {number:02d}')
+
+        response = self.client.get(reverse('movies:list'), {'page': 'not-a-number'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(len(response.context['movies']), 12)

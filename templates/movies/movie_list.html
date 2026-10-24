@@ -10,6 +10,33 @@
             <p class="section-description">Explore the movies playing at CineBook theatres.</p>
         </div>
 
+        <form class="movie-filters" method="get" action="{% url 'movies:list' %}">
+            <div class="movie-search-field">
+                <label for="movie-search">Search by title</label>
+                <input
+                    id="movie-search"
+                    name="q"
+                    type="search"
+                    maxlength="100"
+                    value="{{ search_query }}"
+                    placeholder="e.g. Lanterns Over Meridian"
+                >
+            </div>
+            <div class="movie-genre-field">
+                <label for="movie-genre">Genre</label>
+                <select id="movie-genre" name="genre">
+                    <option value="">All genres</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre }}"{% if selected_genre == genre %} selected{% endif %}>{{ genre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="button button-primary movie-filter-submit" type="submit">Search movies</button>
+            {% if has_filters %}
+                <a class="clear-filters" href="{% url 'movies:list' %}">Clear filters</a>
+            {% endif %}
+        </form>
+
         {% if movies %}
             <div class="movie-grid">
                 {% for movie in movies %}
@@ -36,11 +63,32 @@
                     </article>
                 {% endfor %}
             </div>
+            {% if page_obj.has_other_pages %}
+                <nav class="pagination" aria-label="Movie pages">
+                    {% if page_obj.has_previous %}
+                        <a class="button button-secondary pagination-link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if selected_genre %}genre={{ selected_genre|urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% else %}
+                        <span class="button button-secondary pagination-link is-disabled" aria-disabled="true">Previous</span>
+                    {% endif %}
+                    <span class="pagination-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a class="button button-secondary pagination-link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if selected_genre %}genre={{ selected_genre|urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                    {% else %}
+                        <span class="button button-secondary pagination-link is-disabled" aria-disabled="true">Next</span>
+                    {% endif %}
+                </nav>
+            {% endif %}
         {% else %}
             <div class="empty-state">
-                <h2>No movies available right now</h2>
-                <p>Please check back soon. New films will appear here when they are added to the catalogue.</p>
-                <a class="button button-secondary" href="{% url 'home' %}">Back to home</a>
+                {% if has_filters %}
+                    <h2>No movies match your filters</h2>
+                    <p>Try another title or genre, or clear the filters to browse all available movies.</p>
+                    <a class="button button-secondary" href="{% url 'movies:list' %}">Clear filters</a>
+                {% else %}
+                    <h2>No movies available right now</h2>
+                    <p>Please check back soon. New films will appear here when they are added to the catalogue.</p>
+                    <a class="button button-secondary" href="{% url 'home' %}">Back to home</a>
+                {% endif %}
             </div>
         {% endif %}
     </section>
