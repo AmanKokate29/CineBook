@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}CineBook — Find your next film{% endblock %}
+
+{% block content %}
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+            <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true"></span> Your next night out starts here</p>
+            <h1 id="hero-title">Great stories.<br><span class="text-accent">Big screen.</span></h1>
+            <p class="hero-description">Discover films, find a seat, and make a night of it. Your cinema plans start with CineBook.</p>
+            <a class="button button-primary" href="{% url 'movies:list' %}">Explore movies <span aria-hidden="true">&rarr;</span></a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+            <div class="art-orbit orbit-one"></div>
+            <div class="art-orbit orbit-two"></div>
+            <div class="art-screen">
+                <span class="screen-glow"></span>
+                <span class="screen-letter">C</span>
+            </div>
+            <span class="art-caption">THE SHOW STARTS SOON</span>
+        </div>
+    </section>
+    <section class="intro-section" aria-labelledby="intro-title">
+        <p class="eyebrow">A better way to movie night</p>
+        <h2 id="intro-title">The previews are just the beginning.</h2>
+        <p class="section-description">We’re setting the scene. Movie discovery and online booking are coming soon.</p>
+    </section>
+{% endblock %}

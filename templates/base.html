@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101113">
+    <title>{% block title %}CineBook — Find your next film{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+    <script src="{% static 'js/main.js' %}" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="wordmark" href="{% url 'home' %}" aria-label="CineBook home">
+                <span class="wordmark-icon" aria-hidden="true">C</span>
+                <span>Cine<span class="wordmark-accent">Book</span></span>
+            </a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
+                <span class="menu-toggle-label">Menu</span>
+            </button>
+            <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation">
+                <a class="nav-link{% if request.resolver_match.url_name == 'home' %} is-current{% endif %}" href="{% url 'home' %}">Home</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'my_bookings' %} is-current{% endif %}" href="{% url 'bookings:my_bookings' %}">My Bookings</a>
+                {% if user.is_authenticated %}
+                    <a class="nav-account" href="{% url 'accounts:profile' %}">My Profile</a>
+                {% else %}
+                    <a class="nav-account" href="{% url 'accounts:login' %}">Login</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <a class="footer-wordmark" href="{% url 'home' %}">Cine<span class="wordmark-accent">Book</span></a>
+            <p>Make room for a good story.</p>
+            <small>&copy; {% now "Y" %} CineBook</small>
+        </div>
+    </footer>
+</body>
+</html>

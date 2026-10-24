@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — CineBook{% endblock %}
+
+{% block content %}
+    <section class="placeholder-page" aria-labelledby="page-title">
+        <p class="eyebrow">CineBook</p>
+        <h1 id="page-title">{{ page_title }}</h1>
+        <p class="section-description">{{ page_message }}</p>
+        <a class="button button-secondary" href="{% url 'home' %}">Back to home</a>
+    </section>
+{% endblock %}
