@@ -170,11 +170,23 @@ class BookingHistoryAccessTests(TestCase):
             user=self.owner,
             show=show,
             total_amount=Decimal('15.00'),
+            status=Booking.Status.CONFIRMED,
         )
         self.other_booking = Booking.objects.create(
             user=self.other_user,
             show=show,
             total_amount=Decimal('15.00'),
+        )
+        seat = Seat.objects.create(
+            screen=screen,
+            row_identifier='B',
+            seat_number=4,
+        )
+        BookedSeat.objects.create(
+            booking=self.owner_booking,
+            show=show,
+            seat=seat,
+            price_paid=Decimal('15.00'),
         )
 
     def test_booking_history_requires_login(self):
@@ -189,7 +201,47 @@ class BookingHistoryAccessTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, str(self.owner_booking.reference))
+        self.assertContains(response, 'History Test Film')
+        self.assertContains(response, 'History Theatre')
+        self.assertContains(response, 'Screen A')
+        self.assertContains(response, 'B4')
+        self.assertContains(response, '15.00')
+        self.assertContains(
+            response,
+            reverse('bookings:detail', args=[self.owner_booking.reference]),
+        )
         self.assertNotContains(response, str(self.other_booking.reference))
+
+    def test_booking_history_displays_empty_state(self):
+        user_with_no_bookings = get_user_model().objects.create_user(
+            username='no-bookings-customer',
+        )
+        self.client.force_login(user_with_no_bookings)
+
+        response = self.client.get(reverse('bookings:my_bookings'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No bookings yet')
+        self.assertContains(response, reverse('movies:list'))
+
+    def test_booking_detail_requires_login_and_only_owner_can_view(self):
+        url = reverse('bookings:detail', args=[self.owner_booking.reference])
+
+        response = self.client.get(url)
+        self.assertRedirects(response, f'/accounts/login/?next={url}')
+
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.client.force_login(self.owner)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'History Test Film')
+        self.assertContains(response, 'History Theatre')
+        self.assertContains(response, 'Screen A')
+        self.assertContains(response, 'B4')
+        self.assertContains(response, 'Confirmed')
+        self.assertContains(response, '15.00')
 
     def test_confirmation_requires_login_and_only_owner_can_view(self):
         url = reverse('bookings:confirmation', args=[self.owner_booking.reference])

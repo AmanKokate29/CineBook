@@ -13,47 +13,61 @@
             <div class="booking-list">
                 {% for booking in bookings %}
                     <article class="booking-card">
-                        <div class="booking-heading">
-                            <div>
-                                <p class="booking-label">Booking reference</p>
-                                <h2>{{ booking.reference }}</h2>
-                            </div>
-                            <span class="booking-status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
-                        </div>
-                        <dl class="booking-details">
-                            <div>
-                                <dt>Movie</dt>
-                                <dd>{{ booking.show.movie.title }}</dd>
-                            </div>
-                            <div>
-                                <dt>Show time</dt>
-                                <dd>{{ booking.show.start_time|date:"M j, Y, g:i a" }}</dd>
-                            </div>
-                            <div>
-                                <dt>Theatre</dt>
-                                <dd>{{ booking.show.screen.theatre.name }}, {{ booking.show.screen.theatre.city }}</dd>
-                            </div>
-                            <div>
-                                <dt>Total</dt>
-                                <dd>{{ booking.total_amount }}</dd>
-                            </div>
-                            <div>
-                                <dt>Booked</dt>
-                                <dd>{{ booking.created_at|date:"M j, Y, g:i a" }}</dd>
-                            </div>
-                        </dl>
-                        {% with seats=booking.booked_seats.all %}
-                            {% if seats %}
-                                <div class="booking-seats">
-                                    <h3>Seats</h3>
-                                    <ul>
-                                        {% for booked_seat in seats %}
-                                            <li>{{ booked_seat.seat }} <span>{{ booked_seat.get_status_display }}</span></li>
-                                        {% endfor %}
-                                    </ul>
+                        <div class="booking-card-main">
+                            <a class="booking-poster-link" href="{% url 'bookings:detail' booking.reference %}" aria-label="View booking for {{ booking.show.movie.title }}">
+                                {% if booking.show.movie.poster %}
+                                    <img class="booking-poster" src="{{ booking.show.movie.poster.url }}" alt="Poster for {{ booking.show.movie.title }}" loading="lazy">
+                                {% else %}
+                                    <div class="booking-poster booking-poster-placeholder" role="img" aria-label="No poster available for {{ booking.show.movie.title }}">
+                                        <span class="poster-mark" aria-hidden="true">C</span>
+                                        <span class="poster-title">{{ booking.show.movie.title }}</span>
+                                    </div>
+                                {% endif %}
+                            </a>
+                            <div class="booking-card-content">
+                                <div class="booking-heading">
+                                    <div>
+                                        <p class="booking-label">Booking reference</p>
+                                        <h2><a href="{% url 'bookings:detail' booking.reference %}">{{ booking.reference }}</a></h2>
+                                    </div>
+                                    <span class="booking-status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
                                 </div>
-                            {% endif %}
-                        {% endwith %}
+                                <dl class="booking-details">
+                                    <div>
+                                        <dt>Movie</dt>
+                                        <dd><a href="{% url 'bookings:detail' booking.reference %}">{{ booking.show.movie.title }}</a></dd>
+                                    </div>
+                                    <div>
+                                        <dt>Show time</dt>
+                                        <dd>{{ booking.show.start_time|date:"M j, Y, g:i a" }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Theatre</dt>
+                                        <dd>{{ booking.show.screen.theatre.name }}, {{ booking.show.screen.theatre.city }} · {{ booking.show.screen.name }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Total</dt>
+                                        <dd>{{ booking.total_amount }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Booked</dt>
+                                        <dd>{{ booking.created_at|date:"M j, Y, g:i a" }}</dd>
+                                    </div>
+                                </dl>
+                                {% with seats=booking.booked_seats.all %}
+                                    {% if seats %}
+                                        <div class="booking-seats">
+                                            <h3>Seats</h3>
+                                            <ul>
+                                                {% for booked_seat in seats %}
+                                                    <li>{{ booked_seat.seat }} <span>{{ booked_seat.get_status_display }}</span></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                                <a class="booking-detail-link" href="{% url 'bookings:detail' booking.reference %}">View booking details</a>
+                            </div>
                     </article>
                 {% endfor %}
             </div>
