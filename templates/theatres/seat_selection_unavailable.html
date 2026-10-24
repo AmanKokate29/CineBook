@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Select seats — CineBook{% endblock %}
+
+{% block content %}
+    <section class="placeholder-page" aria-labelledby="seat-selection-title">
+        <p class="eyebrow">Showtime available</p>
+        <h1 id="seat-selection-title">Seat selection is coming soon</h1>
+        <p class="section-description">
+            {{ show.movie.title }} at {{ show.screen.theatre.name }} on
+            {{ show.start_time|date:"F j, Y" }} at {{ show.start_time|date:"g:i A" }}.
+            This show is available, but online seat selection is not implemented yet.
+        </p>
+        <a class="button button-secondary" href="{% url 'theatres:movie_showtimes' show.movie_id %}">Back to showtimes</a>
+    </section>
+{% endblock %}

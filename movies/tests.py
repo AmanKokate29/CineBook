@@ -93,8 +93,8 @@ class MovieBrowsingTests(TestCase):
         self.assertContains(response, movie.description)
         self.assertContains(response, movie.genre)
         self.assertContains(response, movie.language)
-        self.assertContains(response, 'Book tickets')
-        self.assertContains(response, 'booking is coming soon')
+        self.assertContains(response, 'View showtimes')
+        self.assertContains(response, reverse('theatres:movie_showtimes', args=[movie.pk]))
         self.assertContains(response, 'No poster available')
 
     def test_inactive_or_unknown_movie_detail_returns_404(self):

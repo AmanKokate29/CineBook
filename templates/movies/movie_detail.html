@@ -32,8 +32,8 @@
                         <p>Description coming soon.</p>
                     {% endif %}
                 </div>
-                <a class="button button-primary" href="#booking-information">Book tickets <span aria-hidden="true">&rarr;</span></a>
-                <p class="booking-note" id="booking-information">Online booking is coming soon. Showtimes and seat selection are not available yet.</p>
+                <a class="button button-primary" href="{% url 'theatres:movie_showtimes' movie.pk %}">View showtimes <span aria-hidden="true">&rarr;</span></a>
+                <p class="booking-note">Choose a date to see upcoming showtimes at CineBook theatres.</p>
             </div>
         </div>
     </article>

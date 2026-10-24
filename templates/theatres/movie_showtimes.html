@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Showtimes for {{ movie.title }} — CineBook{% endblock %}
+
+{% block content %}
+    <section class="showtimes-page" aria-labelledby="showtimes-title">
+        <a class="back-link" href="{% url 'movies:detail' movie.pk %}">&larr; {{ movie.title }}</a>
+        <div class="page-heading">
+            <p class="eyebrow">Find a seat for your story</p>
+            <h1 id="showtimes-title">Choose a showtime</h1>
+            <p class="section-description">{{ movie.title }} at theatres near you.</p>
+        </div>
+
+        <div class="show-date-section">
+            <h2>Available dates</h2>
+            {% if available_dates %}
+                <nav class="show-date-list" aria-label="Available show dates">
+                    {% for show_date in available_dates %}
+                        <a
+                            class="show-date-link{% if show_date == selected_date %} is-selected{% endif %}"
+                            href="?date={{ show_date|date:'Y-m-d' }}"
+                            {% if show_date == selected_date %}aria-current="date"{% endif %}
+                        >
+                            <span>{{ show_date|date:"D" }}</span>
+                            <strong>{{ show_date|date:"M j" }}</strong>
+                        </a>
+                    {% endfor %}
+                </nav>
+            {% else %}
+                <p class="showtimes-empty">There are no upcoming showtimes for this movie yet.</p>
+            {% endif %}
+        </div>
+
+        {% if date_error %}
+            <p class="showtimes-notice" role="status">That date was not valid. Choose an available date above.</p>
+        {% endif %}
+
+        {% if shows %}
+            <div class="show-date-heading">
+                <p class="eyebrow">Showtimes for</p>
+                <h2>{{ selected_date|date:"l, F j, Y" }}</h2>
+            </div>
+            {% regroup shows by screen.theatre as theatre_groups %}
+            <div class="theatre-show-list">
+                {% for theatre_group in theatre_groups %}
+                    <section class="theatre-show-card" aria-labelledby="theatre-{{ forloop.counter }}">
+                        <div class="theatre-show-heading">
+                            <div>
+                                <h2 id="theatre-{{ forloop.counter }}">{{ theatre_group.grouper.name }}</h2>
+                                <p>{{ theatre_group.grouper.address }}, {{ theatre_group.grouper.city }}</p>
+                            </div>
+                        </div>
+                        {% regroup theatre_group.list by screen as screen_groups %}
+                        {% for screen_group in screen_groups %}
+                            <div class="screen-show-row">
+                                <h3>{{ screen_group.grouper.name }}</h3>
+                                <div class="showtime-list">
+                                    {% for show in screen_group.list %}
+                                        <article class="showtime-option">
+                                            <div class="showtime-details">
+                                                <time datetime="{{ show.start_time|date:'c' }}">{{ show.start_time|date:"g:i A" }}</time>
+                                                <span>{{ show.ticket_price }} per ticket</span>
+                                            </div>
+                                            <a class="button button-secondary showtime-button" href="{% url 'theatres:select_seats' show.pk %}">
+                                                Select seats
+                                            </a>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </section>
+                {% endfor %}
+            </div>
+        {% elif available_dates %}
+            <div class="empty-state">
+                <h2>No showtimes on {{ selected_date|date:"F j, Y" }}</h2>
+                <p>Choose another available date to see showtimes for {{ movie.title }}.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
