@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 630" fill="none">
+  <defs>
+    <linearGradient id="curtain" x1="0" y1="0" x2="420" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#311D35"/>
+      <stop offset=".55" stop-color="#9E344A"/>
+      <stop offset="1" stop-color="#E47A52"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="matrix(0 390 -238 0 210 142)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE2A1" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#FFE2A1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#curtain)" d="M0 0h420v630H0z"/>
+  <path fill="url(#light)" d="M0 0h420v630H0z"/>
+  <path d="M0 0h96c-15 92 25 146 0 237s26 180 0 393H0V0Zm420 0h-96c15 92-25 146 0 237s-26 180 0 393h96V0Z" fill="#401F3C" fill-opacity=".65"/>
+  <path d="M0 0h49c-15 111 16 162 2 251S65 465 44 630H0V0Zm420 0h-49c15 111-16 162-2 251s-14 214 7 379h44V0Z" fill="#F09B65" fill-opacity=".28"/>
+  <ellipse cx="210" cy="437" rx="96" ry="18" fill="#351E38" fill-opacity=".5"/>
+  <path d="M173 428c0-36 17-61 37-61s37 25 37 61v9h-74v-9Z" fill="#38223A"/>
+  <circle cx="210" cy="350" r="19" fill="#38223A"/>
+</svg>

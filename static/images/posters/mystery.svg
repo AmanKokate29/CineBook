@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 630" fill="none">
+  <defs>
+    <linearGradient id="night" x1="32" y1="0" x2="365" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#171B3D"/>
+      <stop offset=".55" stop-color="#38366D"/>
+      <stop offset="1" stop-color="#171A33"/>
+    </linearGradient>
+    <radialGradient id="moon" cx="0" cy="0" r="1" gradientTransform="matrix(0 130 -130 0 303 151)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9D8A8"/>
+      <stop offset="1" stop-color="#E9D8A8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#night)" d="M0 0h420v630H0z"/>
+  <circle cx="303" cy="151" r="130" fill="url(#moon)"/>
+  <circle cx="303" cy="151" r="49" fill="#F0DDAA"/>
+  <path d="M0 390h420v240H0z" fill="#14172B"/>
+  <path d="M30 390V260h48v130h34V212h55v178h39V285h45v105h34V237h52v153h45V300h51v330H30V390Z" fill="#202544"/>
+  <path d="M55 298h8v12h-8v-12Zm55-40h9v13h-9v-13Zm32 74h8v12h-8v-12Zm77-28h8v12h-8v-12Zm54-40h8v12h-8v-12Zm57 64h8v12h-8v-12Zm36-27h8v12h-8v-12Z" fill="#E9B866" fill-opacity=".7"/>
+  <path d="M0 504c87-33 167-30 250 2 55 21 110 21 170-1v125H0V504Z" fill="#101426"/>
+  <path d="M192 630c13-59 14-102 18-157 3-42 17-66 38-80 22 17 34 44 37 80 4 55 5 98 18 157H192Z" fill="#121528"/>
+</svg>

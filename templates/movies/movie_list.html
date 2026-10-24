@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Movies — CineBook{% endblock %}
 
@@ -45,9 +46,26 @@
                             {% if movie.poster %}
                                 <img class="movie-poster" src="{{ movie.poster.url }}" alt="Poster for {{ movie.title }}" loading="lazy">
                             {% else %}
-                                <div class="movie-poster movie-poster-placeholder" role="img" aria-label="No poster available for {{ movie.title }}">
-                                    <span class="poster-mark" aria-hidden="true">C</span>
-                                    <span class="poster-title">{{ movie.title }}</span>
+                                <div class="movie-poster movie-poster-art" role="img" aria-label="Illustrated poster artwork for {{ movie.title }}">
+                                    {% if movie.genre|lower == "adventure" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/adventure.svg' %}" alt="" loading="lazy">
+                                    {% elif movie.genre|lower == "drama" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/drama.svg' %}" alt="" loading="lazy">
+                                    {% elif movie.genre|lower == "family" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/family.svg' %}" alt="" loading="lazy">
+                                    {% elif movie.genre|lower == "mystery" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/mystery.svg' %}" alt="" loading="lazy">
+                                    {% elif movie.genre|lower == "romance" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/romance.svg' %}" alt="" loading="lazy">
+                                    {% elif movie.genre|lower == "science fiction" %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/science-fiction.svg' %}" alt="" loading="lazy">
+                                    {% else %}
+                                        <img class="poster-art-image" src="{% static 'images/posters/default.svg' %}" alt="" loading="lazy">
+                                    {% endif %}
+                                    <span class="poster-art-overlay">
+                                        <span class="poster-art-genre">{{ movie.genre }}</span>
+                                        <span class="poster-art-title">{{ movie.title }}</span>
+                                    </span>
                                 </div>
                             {% endif %}
                             <div class="movie-card-content">

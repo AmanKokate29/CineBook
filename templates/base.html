@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101113">
+    <meta name="theme-color" content="#f7f6f2">
     <title>{% block title %}CineBook — Find your next film{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
@@ -54,6 +54,7 @@
         <div class="footer-inner">
             <a class="footer-wordmark" href="{% url 'home' %}">Cine<span class="wordmark-accent">Book</span></a>
             <p>Make room for a good story.</p>
+            <small class="footer-attribution">This product uses the <a href="https://www.themoviedb.org/">TMDB API</a> but is not endorsed or certified by TMDB.</small>
             <small>&copy; {% now "Y" %} CineBook</small>
         </div>
     </footer>

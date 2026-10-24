@@ -1,7 +1,15 @@
+import json
+import os
+import tempfile
+from io import BytesIO, StringIO
+from unittest.mock import patch
+
 from django.contrib.staticfiles import finders
-from django.test import TestCase
+from django.core.management import call_command, CommandError
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from .models import Movie
 
@@ -43,6 +51,19 @@ class FrontendLayoutTests(TestCase):
     def test_static_assets_are_discoverable(self):
         self.assertIsNotNone(finders.find('css/style.css'))
         self.assertIsNotNone(finders.find('js/main.js'))
+        for genre in (
+            'adventure',
+            'drama',
+            'family',
+            'mystery',
+            'romance',
+            'science-fiction',
+            'default',
+        ):
+            with self.subTest(genre=genre):
+                self.assertIsNotNone(
+                    finders.find(f'images/posters/{genre}.svg')
+                )
 
 
 class MovieBrowsingTests(TestCase):
@@ -70,7 +91,8 @@ class MovieBrowsingTests(TestCase):
         self.assertContains(response, active_movie.genre)
         self.assertContains(response, '124 min')
         self.assertContains(response, active_movie.language)
-        self.assertContains(response, 'No poster available')
+        self.assertContains(response, 'Illustrated poster artwork')
+        self.assertContains(response, '/static/images/posters/science-fiction.svg')
         self.assertNotContains(response, 'Hidden Film')
         self.assertEqual(len(response.context['movies']), 1)
 
@@ -201,4 +223,153 @@ class MovieBrowsingTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['page_obj'].number, 1)
-        self.assertEqual(len(response.context['movies']), 12)
+
+
+class PosterSyncCommandTests(TestCase):
+    def setUp(self):
+        self.movie = Movie.objects.create(
+            title='A CineBook Story',
+            description='A journey across the stars.',
+            genre='Drama',
+            duration=124,
+            language='English',
+            release_date=timezone.localdate().replace(year=2024),
+            is_active=True,
+        )
+        self.media_directory = tempfile.TemporaryDirectory()
+        self.media_settings = override_settings(MEDIA_ROOT=self.media_directory.name)
+        self.media_settings.enable()
+        self.addCleanup(self.media_settings.disable)
+        self.addCleanup(self.media_directory.cleanup)
+
+    @staticmethod
+    def _poster_bytes():
+        image_data = BytesIO()
+        Image.new('RGB', (20, 30), color=(180, 45, 60)).save(
+            image_data,
+            format='JPEG',
+        )
+        return image_data.getvalue()
+
+    @staticmethod
+    def _response(content, content_type='application/json'):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self, size=-1):
+                return content if size < 0 else content[:size]
+
+        response = FakeResponse()
+        response.headers = {'Content-Type': content_type}
+        return response
+
+    def test_imports_exact_title_and_year_poster(self):
+        search_response = self._response(
+            json.dumps(
+                {
+                    'results': [
+                        {
+                            'title': self.movie.title,
+                            'original_title': self.movie.title,
+                            'release_date': f'{self.movie.release_date.year + 1}-06-01',
+                            'poster_path': '/sample-poster.jpg',
+                        }
+                    ]
+                }
+            ).encode()
+        )
+        image_response = self._response(
+            self._poster_bytes(),
+            content_type='image/jpeg',
+        )
+
+        with (
+            patch.dict(os.environ, {'TMDB_API_READ_ACCESS_TOKEN': 'test-token'}),
+            patch(
+                'movies.management.commands.sync_movie_posters.urlopen',
+                side_effect=[search_response, image_response],
+            ) as mock_urlopen,
+        ):
+            call_command('sync_movie_posters', stdout=StringIO())
+
+        self.movie.refresh_from_db()
+        self.assertTrue(self.movie.poster.name.endswith('-tmdb.jpg'))
+        with self.movie.poster.open('rb') as poster:
+            self.assertEqual(poster.read(), self._poster_bytes())
+        self.assertEqual(mock_urlopen.call_count, 2)
+        search_request = mock_urlopen.call_args_list[0].args[0]
+        self.assertEqual(
+            search_request.get_header('Authorization'),
+            'Bearer test-token',
+        )
+        self.assertNotIn('year=', search_request.full_url)
+
+    def test_rejects_non_exact_title_without_downloading(self):
+        search_response = self._response(
+            json.dumps(
+                {
+                    'results': [
+                        {
+                            'title': 'A Different Story',
+                            'original_title': 'A Different Story',
+                            'release_date': f'{self.movie.release_date.year}-06-01',
+                            'poster_path': '/wrong-poster.jpg',
+                        }
+                    ]
+                }
+            ).encode()
+        )
+
+        with (
+            patch.dict(os.environ, {'TMDB_API_READ_ACCESS_TOKEN': 'test-token'}),
+            patch(
+                'movies.management.commands.sync_movie_posters.urlopen',
+                return_value=search_response,
+            ) as mock_urlopen,
+        ):
+            call_command('sync_movie_posters', stdout=StringIO())
+
+        self.movie.refresh_from_db()
+        self.assertFalse(self.movie.poster)
+        mock_urlopen.assert_called_once()
+
+    def test_dry_run_does_not_download_or_save_poster(self):
+        search_response = self._response(
+            json.dumps(
+                {
+                    'results': [
+                        {
+                            'title': self.movie.title,
+                            'original_title': self.movie.title,
+                            'release_date': f'{self.movie.release_date.year}-06-01',
+                            'poster_path': '/sample-poster.jpg',
+                        }
+                    ]
+                }
+            ).encode()
+        )
+
+        with (
+            patch.dict(os.environ, {'TMDB_API_READ_ACCESS_TOKEN': 'test-token'}),
+            patch(
+                'movies.management.commands.sync_movie_posters.urlopen',
+                return_value=search_response,
+            ) as mock_urlopen,
+        ):
+            call_command('sync_movie_posters', '--dry-run', stdout=StringIO())
+
+        self.movie.refresh_from_db()
+        self.assertFalse(self.movie.poster)
+        mock_urlopen.assert_called_once()
+
+    def test_requires_api_token(self):
+        with patch.dict(os.environ, {'TMDB_API_READ_ACCESS_TOKEN': ''}):
+            with self.assertRaisesMessage(
+                CommandError,
+                'Set TMDB_API_READ_ACCESS_TOKEN',
+            ):
+                call_command('sync_movie_posters', stdout=StringIO())

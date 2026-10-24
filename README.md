@@ -187,6 +187,7 @@ required variables are:
 | `DJANGO_CSRF_COOKIE_SECURE` | Override secure CSRF cookie behavior |
 | `DJANGO_SECURE_HSTS_SECONDS` | Enable HSTS after confirming HTTPS deployment |
 | `DJANGO_TRUST_X_FORWARDED_PROTO` | Trust a reverse proxy's HTTPS protocol header |
+| `TMDB_API_READ_ACCESS_TOKEN` | Optional TMDb token for importing movie posters |
 | `DB_NAME` | MySQL database name (`cinebook_db` for the setup above) |
 | `DB_USER` | MySQL application username |
 | `DB_PASSWORD` | MySQL application password |
@@ -195,6 +196,30 @@ required variables are:
 
 `.env` is excluded from Git by [`.gitignore`](.gitignore). Never commit real
 credentials or secret keys. Keep `.env.example` limited to placeholders.
+
+### Import movie posters from TMDb
+
+The movie catalogue supports uploaded posters in Django Admin. To import posters
+for movies that do not already have one, request a TMDb API Read Access Token,
+set `TMDB_API_READ_ACCESS_TOKEN` in your local `.env`, and preview matches:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_movie_posters --dry-run
+```
+
+The importer only accepts exact normalized title matches with a release year
+within one year of the movie record. It skips ambiguous or unmatched results
+and preserves posters already uploaded in Admin. After reviewing the preview,
+run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_movie_posters
+```
+
+Imported files are stored under `media/movie_posters/`. Restart the development
+server if needed and reload the movie catalogue. Movies without a confident
+match continue to use the local illustrated fallback. This product uses the
+TMDB API but is not endorsed or certified by TMDB.
 
 ### 5. Apply migrations
 

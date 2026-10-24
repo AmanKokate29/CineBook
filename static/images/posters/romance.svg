@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 630" fill="none">
+  <defs>
+    <linearGradient id="sunset" x1="210" y1="0" x2="210" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8B2A5"/>
+      <stop offset=".5" stop-color="#F8C89A"/>
+      <stop offset="1" stop-color="#9B7894"/>
+    </linearGradient>
+    <linearGradient id="water" x1="210" y1="342" x2="210" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9E728B"/>
+      <stop offset="1" stop-color="#393C63"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#sunset)" d="M0 0h420v630H0z"/>
+  <circle cx="210" cy="273" r="85" fill="#FFE5B5"/>
+  <path d="M0 354h420v276H0z" fill="url(#water)"/>
+  <path d="M0 386c75-14 147-12 210 1 81 17 148 15 210-1v24c-70 17-138 18-210 2-73-16-138-17-210-2v-24Zm0 66c86-12 149-11 210 2 78 17 145 17 210 1v20c-72 17-140 15-210 0-70-15-138-17-210-3v-20Zm0 73c80-13 146-12 210 3 72 15 140 15 210 0v20c-74 16-141 15-210 0-70-14-138-17-210-1v-22Z" fill="#F8D7C0" fill-opacity=".58"/>
+  <path d="M0 525c95-26 174-21 260 3 57 16 112 15 160 0v102H0V525Z" fill="#343652"/>
+  <path d="M168 440c0-30 14-50 33-50 18 0 32 20 32 50v115h-65V440Z" fill="#292C47"/>
+  <circle cx="201" cy="371" r="19" fill="#292C47"/>
+  <path d="M231 444c0-26 12-43 28-43s28 17 28 43v111h-56V444Z" fill="#292C47"/>
+  <circle cx="259" cy="384" r="17" fill="#292C47"/>
+</svg>
