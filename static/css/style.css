@@ -391,6 +391,195 @@ h2 {
     margin-bottom: 28px;
 }
 
+.movies-page {
+    width: min(100% - 40px, var(--content-width));
+    margin: 0 auto;
+    padding: 72px 0 100px;
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+}
+
+.movie-card {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    background: var(--color-surface);
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.movie-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(228, 170, 103, 0.5);
+}
+
+.movie-card-link {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.movie-poster {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    display: block;
+    object-fit: cover;
+    background: var(--color-surface-raised);
+}
+
+.movie-poster-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    background:
+        radial-gradient(ellipse at 50% 35%, rgba(228, 170, 103, 0.2), transparent 58%),
+        linear-gradient(150deg, #25221f, #151618 70%);
+    color: var(--color-text);
+    text-align: center;
+}
+
+.poster-mark {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(228, 170, 103, 0.55);
+    border-radius: 50%;
+    color: var(--color-accent);
+    font-family: var(--font-heading);
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.poster-title {
+    max-width: 100%;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.movie-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+}
+
+.movie-card-content h2 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+}
+
+.movie-genre {
+    margin: 0 0 14px;
+    color: var(--color-accent);
+    font-size: 13px;
+}
+
+.movie-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    list-style: none;
+}
+
+.movie-meta li + li::before {
+    margin-right: 8px;
+    color: rgba(255, 255, 255, 0.25);
+    content: "·";
+}
+
+.movie-card-action {
+    display: inline-flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 20px;
+    color: var(--color-accent-bright);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.movie-detail {
+    width: min(100% - 40px, 1000px);
+    margin: 0 auto;
+    padding: 48px 0 100px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 28px;
+    color: var(--color-muted);
+    font-size: 14px;
+    transition: color 160ms ease;
+}
+
+.back-link:hover {
+    color: var(--color-accent-bright);
+}
+
+.movie-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(32px, 6vw, 72px);
+}
+
+.movie-detail-poster .movie-poster {
+    position: sticky;
+    top: 24px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+}
+
+.movie-detail-content {
+    padding-top: 12px;
+}
+
+.movie-detail-content h1 {
+    margin-bottom: 18px;
+    font-size: clamp(38px, 5vw, 58px);
+}
+
+.movie-detail-meta {
+    margin-bottom: 36px;
+    font-size: 13px;
+}
+
+.movie-description {
+    margin-bottom: 30px;
+}
+
+.movie-description h2 {
+    margin-bottom: 12px;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+}
+
+.movie-description p {
+    color: var(--color-muted);
+    line-height: 1.8;
+}
+
+.booking-note {
+    margin: 14px 0 0;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
 .site-messages {
     width: min(100% - 40px, 720px);
     margin: 20px auto 0;
@@ -719,6 +908,18 @@ h2 {
 
     .hero-art {
         min-height: 350px;
+    }
+
+    .movie-detail-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .movie-detail-poster {
+        width: min(100%, 320px);
+    }
+
+    .movie-detail-poster .movie-poster {
+        position: static;
     }
 
     .art-orbit {

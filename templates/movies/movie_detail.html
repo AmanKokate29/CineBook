@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }} — CineBook{% endblock %}
+
+{% block content %}
+    <article class="movie-detail" aria-labelledby="movie-title">
+        <a class="back-link" href="{% url 'movies:list' %}">&larr; All movies</a>
+        <div class="movie-detail-layout">
+            <div class="movie-detail-poster">
+                {% if movie.poster %}
+                    <img class="movie-poster" src="{{ movie.poster.url }}" alt="Poster for {{ movie.title }}">
+                {% else %}
+                    <div class="movie-poster movie-poster-placeholder" role="img" aria-label="No poster available for {{ movie.title }}">
+                        <span class="poster-mark" aria-hidden="true">C</span>
+                        <span class="poster-title">{{ movie.title }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="movie-detail-content">
+                <p class="eyebrow">{{ movie.genre }}</p>
+                <h1 id="movie-title">{{ movie.title }}</h1>
+                <ul class="movie-meta movie-detail-meta" aria-label="Movie details">
+                    <li>{{ movie.duration }} min</li>
+                    <li>{{ movie.language }}</li>
+                    <li>Released {{ movie.release_date|date:"M j, Y" }}</li>
+                </ul>
+                <div class="movie-description">
+                    <h2>About the movie</h2>
+                    {% if movie.description %}
+                        <p>{{ movie.description|linebreaksbr }}</p>
+                    {% else %}
+                        <p>Description coming soon.</p>
+                    {% endif %}
+                </div>
+                <a class="button button-primary" href="#booking-information">Book tickets <span aria-hidden="true">&rarr;</span></a>
+                <p class="booking-note" id="booking-information">Online booking is coming soon. Showtimes and seat selection are not available yet.</p>
+            </div>
+        </div>
+    </article>
+{% endblock %}

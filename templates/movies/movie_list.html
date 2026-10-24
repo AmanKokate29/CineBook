@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Movies — CineBook{% endblock %}
+
+{% block content %}
+    <section class="movies-page" aria-labelledby="movies-title">
+        <div class="page-heading">
+            <p class="eyebrow">Find your next favourite</p>
+            <h1 id="movies-title">Now showing</h1>
+            <p class="section-description">Explore the movies playing at CineBook theatres.</p>
+        </div>
+
+        {% if movies %}
+            <div class="movie-grid">
+                {% for movie in movies %}
+                    <article class="movie-card">
+                        <a class="movie-card-link" href="{% url 'movies:detail' movie.pk %}" aria-label="View {{ movie.title }}">
+                            {% if movie.poster %}
+                                <img class="movie-poster" src="{{ movie.poster.url }}" alt="Poster for {{ movie.title }}" loading="lazy">
+                            {% else %}
+                                <div class="movie-poster movie-poster-placeholder" role="img" aria-label="No poster available for {{ movie.title }}">
+                                    <span class="poster-mark" aria-hidden="true">C</span>
+                                    <span class="poster-title">{{ movie.title }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="movie-card-content">
+                                <h2>{{ movie.title }}</h2>
+                                <p class="movie-genre">{{ movie.genre }}</p>
+                                <ul class="movie-meta" aria-label="Movie details">
+                                    <li>{{ movie.duration }} min</li>
+                                    <li>{{ movie.language }}</li>
+                                </ul>
+                                <span class="movie-card-action">View details <span aria-hidden="true">&rarr;</span></span>
+                            </div>
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h2>No movies available right now</h2>
+                <p>Please check back soon. New films will appear here when they are added to the catalogue.</p>
+                <a class="button button-secondary" href="{% url 'home' %}">Back to home</a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
