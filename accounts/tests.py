@@ -73,6 +73,60 @@ class AccountAuthenticationTests(TestCase):
             f"{reverse('accounts:login')}?next={reverse('accounts:profile')}",
         )
 
+    def test_profile_displays_account_details(self):
+        self.user.first_name = 'Casey'
+        self.user.last_name = 'Reel'
+        self.user.email = 'casey@example.com'
+        self.user.save()
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('accounts:profile'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'screenfan')
+        self.assertContains(response, 'value="Casey"')
+        self.assertContains(response, 'value="Reel"')
+        self.assertContains(response, 'value="casey@example.com"')
+        self.assertContains(response, reverse('bookings:my_bookings'))
+
+    def test_profile_updates_user_details(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('accounts:profile'),
+            {
+                'first_name': 'Casey',
+                'last_name': 'Reel',
+                'email': 'casey@example.com',
+            },
+        )
+
+        self.assertRedirects(response, reverse('accounts:profile'))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, 'Casey')
+        self.assertEqual(self.user.last_name, 'Reel')
+        self.assertEqual(self.user.email, 'casey@example.com')
+
+    def test_profile_rejects_invalid_email_without_saving_changes(self):
+        self.user.email = 'old@example.com'
+        self.user.save()
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('accounts:profile'),
+            {
+                'first_name': 'Casey',
+                'last_name': 'Reel',
+                'email': 'not-an-email',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, '')
+        self.assertEqual(self.user.last_name, '')
+        self.assertEqual(self.user.email, 'old@example.com')
+
     def test_logout_requires_post_and_ends_session(self):
         self.client.force_login(self.user)
 

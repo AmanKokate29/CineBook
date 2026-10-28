@@ -6,7 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import RegistrationForm
+from .forms import ProfileForm, RegistrationForm
 
 
 class CineBookLoginView(LoginView):
@@ -53,11 +53,13 @@ def logout_view(request):
 
 @login_required
 def profile(request):
-    return render(
-        request,
-        'pages/placeholder.html',
-        {
-            'page_title': 'Your profile',
-            'page_message': f'Signed in as {request.user.get_username()}. Profile settings are coming soon.',
-        },
-    )
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated.')
+            return redirect('accounts:profile')
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(request, 'accounts/profile.html', {'form': form})
