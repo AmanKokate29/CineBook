@@ -288,6 +288,35 @@ class BookingHistoryAccessTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'No payment was processed')
 
+    def test_calendar_download_requires_login_and_only_owner_can_access(self):
+        url = reverse('bookings:calendar', args=[self.owner_booking.reference])
+
+        response = self.client.get(url)
+        self.assertRedirects(response, f'/accounts/login/?next={url}')
+
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.client.force_login(self.owner)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/calendar; charset=utf-8')
+        self.assertIn('attachment;', response['Content-Disposition'])
+        self.assertIn(
+            f'DTSTART:{self.owner_booking.show.start_time.astimezone(timezone.get_fixed_timezone(0)):%Y%m%dT%H%M%SZ}',
+            response.content.decode(),
+        )
+        calendar_content = response.content.decode()
+        self.assertIn('SUMMARY:History Test Film', calendar_content)
+        self.assertIn(
+            r'LOCATION:History Theatre\, Screen A\, 5 Cinema Road\, Test City',
+            calendar_content,
+        )
+        self.assertIn(
+            f'DESCRIPTION:Booking reference: {self.owner_booking.reference}\\nSeats: B4',
+            calendar_content.replace('\r\n ', ''),
+        )
+
     def test_owner_can_cancel_with_post_and_seats_are_released(self):
         self.client.force_login(self.owner)
         url = reverse('bookings:cancel', args=[self.owner_booking.reference])

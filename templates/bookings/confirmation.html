@@ -41,6 +41,7 @@
         </article>
 
         <div class="confirmation-actions">
+            <a class="button button-secondary" href="{% url 'bookings:calendar' booking.reference %}">Add to calendar</a>
             <a class="button button-primary" href="{% url 'bookings:my_bookings' %}">View my bookings</a>
             <a class="button button-secondary" href="{% url 'movies:list' %}">Browse movies</a>
         </div>
