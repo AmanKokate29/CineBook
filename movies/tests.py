@@ -105,6 +105,19 @@ class MovieBrowsingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Showing 1-12 of 13 movies')
 
+    def test_movie_list_displays_active_filter_summary(self):
+        match = self.create_movie(title='Moonlit Mystery', genre='Mystery')
+        self.create_movie(title='Moonlit Journey', genre='Adventure')
+
+        response = self.client.get(
+            reverse('movies:list'),
+            {'q': 'Moonlit', 'genre': 'Mystery'},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Active filters: title contains &quot;Moonlit&quot;, genre: Mystery')
+        self.assertContains(response, match.title)
+
     def test_movie_list_shows_empty_state_when_no_active_movies_exist(self):
         self.create_movie(is_active=False)
 

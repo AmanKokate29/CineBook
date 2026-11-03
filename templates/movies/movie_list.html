@@ -39,6 +39,11 @@
         </form>
 
         {% if movies %}
+            {% if has_filters %}
+                <p class="filter-summary" aria-live="polite">
+                    Active filters: {{ active_filters|join:", " }}
+                </p>
+            {% endif %}
             <p class="results-summary" aria-live="polite">
                 Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} movies
             </p>

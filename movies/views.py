@@ -27,10 +27,12 @@ def movie_list(request):
         (genre for genre in genres if genre.casefold() == requested_genre.casefold()),
         '',
     )
-
+    active_filters = []
     if search_query:
+        active_filters.append(f'title contains "{search_query}"')
         movies = movies.filter(title__icontains=search_query)
     if selected_genre:
+        active_filters.append(f'genre: {selected_genre}')
         movies = movies.filter(genre=selected_genre)
 
     movies = movies.only(
@@ -51,6 +53,7 @@ def movie_list(request):
             'genres': genres,
             'search_query': search_query,
             'selected_genre': selected_genre,
+            'active_filters': active_filters,
             'has_filters': bool(search_query or selected_genre),
         },
     )
