@@ -96,6 +96,15 @@ class MovieBrowsingTests(TestCase):
         self.assertNotContains(response, 'Hidden Film')
         self.assertEqual(len(response.context['movies']), 1)
 
+    def test_movie_list_displays_result_count_summary(self):
+        for number in range(13):
+            self.create_movie(title=f'Movie {number:02d}')
+
+        response = self.client.get(reverse('movies:list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Showing 1-12 of 13 movies')
+
     def test_movie_list_shows_empty_state_when_no_active_movies_exist(self):
         self.create_movie(is_active=False)
 

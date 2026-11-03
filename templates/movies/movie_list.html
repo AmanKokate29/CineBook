@@ -39,6 +39,9 @@
         </form>
 
         {% if movies %}
+            <p class="results-summary" aria-live="polite">
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} movies
+            </p>
             <div class="movie-grid">
                 {% for movie in movies %}
                     <article class="movie-card">
