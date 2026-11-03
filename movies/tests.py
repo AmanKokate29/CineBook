@@ -105,6 +105,16 @@ class MovieBrowsingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Showing 1-12 of 13 movies')
 
+    def test_movie_list_shows_quick_genre_filters(self):
+        self.create_movie(title='Action Film', genre='Action')
+        self.create_movie(title='Mystery Film', genre='Mystery')
+
+        response = self.client.get(reverse('movies:list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'genre-pill')
+        self.assertContains(response, 'href="/movies/?genre=Action"')
+
     def test_movie_list_displays_active_filter_summary(self):
         match = self.create_movie(title='Moonlit Mystery', genre='Mystery')
         self.create_movie(title='Moonlit Journey', genre='Adventure')

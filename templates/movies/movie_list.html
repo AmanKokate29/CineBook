@@ -38,6 +38,15 @@
             {% endif %}
         </form>
 
+        {% if genres %}
+            <div class="genre-pills" aria-label="Browse by genre">
+                <a class="genre-pill {% if not selected_genre %}is-selected{% endif %}" href="{% url 'movies:list' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}">All</a>
+                {% for genre in genres %}
+                    <a class="genre-pill {% if selected_genre == genre %}is-selected{% endif %}" href="{% url 'movies:list' %}?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}genre={{ genre|urlencode }}">{{ genre }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% if movies %}
             {% if has_filters %}
                 <p class="filter-summary" aria-live="polite">
